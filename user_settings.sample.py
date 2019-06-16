@@ -27,3 +27,5 @@ user_settings = {
     #Disable in-process synchronization primitives
 #    "PROTON_NO_ESYNC": "1",
 }
+
+import protonfixes
