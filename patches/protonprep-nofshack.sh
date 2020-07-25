@@ -50,7 +50,7 @@
     cd ..
 
     # VKD3D patches
-    cd vkd3d-proton
+    cd vkd3d
     git reset --hard HEAD
     git clean -xdf
     cd ..
@@ -68,6 +68,9 @@
     cd wine-staging
     git reset --hard HEAD
     git clean -xdf
+    
+    echo "rawinput staging rebase"
+    patch -Np1 < ../patches/wine-hotfixes/staging-restore-rawinput-hidewineexports-threadtime.patch
     cd ..
 
     #WINE
@@ -77,11 +80,6 @@
 
     echo "proton gamepad conflict fix"
     git revert --no-commit da7d60bf97fb8726828e57f852e8963aacde21e9
-
-    echo "proton mf topology fixes"
-    git revert --no-commit e308d81a617632fe0fedd243952f79e8d9ec05b4
-    git revert --no-commit 16d44b61d15193905ef40661bc1547cb45e7b019
-    git revert --no-commit 8e343024b577892bd4908304ded34b758579698d
 
 # disable these when using proton's gamepad patches
 #    -W dinput-SetActionMap-genre \
@@ -94,6 +92,12 @@
 #    -W winebuild-Fake_Dlls \
 #    -W ntdll-Syscall_Emulation \
 #    -W ntdll-ThreadHideFromDebugger \
+
+    echo "winevulkan hotfixes pending"
+    patch -Np1 < ../patches/wine-hotfixes/pending/winevulkan-dont_initialize_vulkan_driver_in_dllmain.patch
+    
+    echo "rawinput backports"
+    patch -Np1 < ../patches/wine-hotfixes/pending/rawinput_backports.patch
     
     echo "applying staging patches"
     ../wine-staging/patches/patchinstall.sh DESTDIR="." --all \
@@ -106,18 +110,24 @@
     -W dinput-remap-joystick \
     -W user32-window-activation
     
-    echo "guy's media foundation alpha patches"
-    patch -Np1 < ../patches/wine-hotfixes/media_foundation/media_foundation_alpha.patch
+    echo "planet zoo/jurassic world hotfixes pending"
+    patch -Np1 < ../patches/wine-hotfixes/pending/planet-zoo-jurassic-world-pending-upstream-staging.patch
+
+    echo "nvidia locale backports"
+    patch -Np1 < ../patches/wine-hotfixes/pending/nvidia_locale_fix.patch
+
+    echo "evr/mf/quartz backports"
+    patch -Np1 < ../patches/wine-hotfixes/pending/evr_mf_quartz_pending.patch
     
-    echo "proton-specific manual mfplat dll register patch"
-    patch -Np1 < ../patches/wine-hotfixes/media_foundation/proton_mediafoundation_dllreg.patch
+    echo "winhttp backports"
+    patch -Np1 < ../patches/wine-hotfixes/pending/winhttp_backports.patch
 
     echo "Indiana Jones and the Emperor's Tomb pending"
     patch -Np1 < ../patches/wine-hotfixes/pending/indiana_jones_fix.patch
         
     #WINE FAUDIO
-    echo "applying faudio patches"
-    patch -Np1 < ../patches/faudio/faudio-ffmpeg.patch
+    #echo "applying faudio patches"
+    #patch -Np1 < ../patches/faudio/faudio-ffmpeg.patch
     
     ### GAME PATCH SECTION ###
     
@@ -134,12 +144,14 @@
     echo "assetto corsa"
     patch -Np1 < ../patches/game-patches/assettocorsa-hud.patch
 
-#    disable, breaks paladins
-#    echo "sword art online"
-#    patch -Np1 < ../patches/game-patches/sword-art-online-gnutls.patch
+    echo "sword art online"
+    patch -Np1 < ../patches/game-patches/sword-art-online-gnutls.patch
 
     echo "origin downloads fix" 
     patch -Np1 < ../patches/game-patches/origin-downloads_fix.patch
+
+    echo "fix steep"
+    patch -Np1 < ../patches/game-patches/steep_fix.patch
     
     echo "rawinput virtual desktop fix"
     #https://bugs.winehq.org/show_bug.cgi?id=48419
@@ -148,7 +160,10 @@
     
     echo "gta v key input fix"
     patch -Np1 < ../patches/game-patches/gta_v_keyboard_input.patch
-        
+    
+    echo "mgs ground zeroes fix"
+    patch -Np1 < ../patches/game-patches/mgs-ground-zeroes.patch
+    
 #  TODO: Add game-specific check
     echo "mk11 patch"
     patch -Np1 < ../patches/game-patches/mk11.patch
@@ -249,12 +264,19 @@
     echo "applying WoW vkd3d wine patches"
     patch -Np1 < ../patches/wine-hotfixes/vkd3d/D3D12SerializeVersionedRootSignature.patch
     patch -Np1 < ../patches/wine-hotfixes/vkd3d/D3D12CreateVersionedRootSignatureDeserializer.patch
-                
+            
+    echo "guy's media foundation alpha patches"
+    patch -Np1 < ../patches/wine-hotfixes/media_foundation/media_foundation_alpha.patch
+    
+    echo "proton-specific manual mfplat dll register patch"
+    patch -Np1 < ../patches/wine-hotfixes/media_foundation/proton_mediafoundation_dllreg.patch
+    
     #WINE CUSTOM PATCHES
     #add your own custom patch lines below
     
     echo "Paul's Diablo 1 menu fix"
     patch -Np1 < ../patches/game-patches/diablo_1_menu.patch
+    
     
     ./dlls/winevulkan/make_vulkan
     ./tools/make_requests
