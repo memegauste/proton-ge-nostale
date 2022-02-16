@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Valve Corporation
+ * Copyright (c) 2020, 2021, 2022 Valve Corporation
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -28,16 +28,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-use glib;
-use glib::subclass;
-use glib::subclass::prelude::*;
-
 use crate::format_hash;
 use crate::HASH_SEED;
 use crate::box_array;
+use crate::copy_into_array;
 use crate::BufferedReader;
+use crate::discarding_disabled;
 
 use gst;
+use gst::glib;
 use gst::prelude::*;
 use gst::subclass::prelude::*;
 use gst::EventView;
@@ -110,24 +109,92 @@ static CAT: Lazy<gst::DebugCategory> = Lazy::new(|| {
 const VIDEOCONV_FOZ_TAG_VIDEODATA: u32 = 0;
 const VIDEOCONV_FOZ_TAG_OGVDATA: u32 = 1;
 const VIDEOCONV_FOZ_TAG_STREAM: u32 = 2;
-const VIDEOCONV_FOZ_NUM_TAGS: usize = 3;
+const VIDEOCONV_FOZ_TAG_MKVDATA: u32 = 3;
+const VIDEOCONV_FOZ_NUM_TAGS: usize = 4;
 
-static DUMP_FOZDB: Lazy<Mutex<Option<fossilize::StreamArchive>>> = Lazy::new(|| {
-    let dump_file_path = match std::env::var("MEDIACONV_VIDEO_DUMP_FILE") {
-        Err(_) => { return Mutex::new(None); },
-        Ok(c) => c,
-    };
+struct VideoConverterDumpFozdb {
+    fozdb: Option<fossilize::StreamArchive>,
+    already_cleaned: bool,
+}
 
-    let dump_file_path = std::path::Path::new(&dump_file_path);
-
-    if fs::create_dir_all(&dump_file_path.parent().unwrap()).is_err() {
-        return Mutex::new(None);
+impl VideoConverterDumpFozdb {
+    fn new() -> Self {
+        Self {
+            fozdb: None,
+            already_cleaned: false,
+        }
     }
 
-    match fossilize::StreamArchive::new(&dump_file_path, OpenOptions::new().write(true).read(true).create(true), VIDEOCONV_FOZ_NUM_TAGS) {
-        Ok(newdb) => Mutex::new(Some(newdb)),
-        Err(_) => Mutex::new(None),
+    fn open(&mut self, create: bool) -> &mut Self {
+        if self.fozdb.is_none() {
+            let dump_file_path = match std::env::var("MEDIACONV_VIDEO_DUMP_FILE") {
+                Err(_) => { return self; },
+                Ok(c) => c,
+            };
+
+            let dump_file_path = std::path::Path::new(&dump_file_path);
+
+            if fs::create_dir_all(&dump_file_path.parent().unwrap()).is_err() {
+                return self;
+            }
+
+            match fossilize::StreamArchive::new(&dump_file_path, OpenOptions::new().write(true).read(true).create(create), VIDEOCONV_FOZ_NUM_TAGS) {
+                Ok(newdb) => {
+                    self.fozdb = Some(newdb);
+                },
+                Err(_) => {
+                    return self;
+                },
+            }
+        }
+        self
     }
+
+    fn close(&mut self) {
+        self.fozdb = None
+    }
+
+    fn discard_transcoded(&mut self) {
+        if self.already_cleaned {
+            return;
+        }
+        if discarding_disabled() {
+            self.already_cleaned = true;
+            return;
+        }
+        if let Some(fozdb) = &mut self.open(false).fozdb {
+            if let Ok(read_fozdb_path) = std::env::var("MEDIACONV_VIDEO_TRANSCODED_FILE") {
+                if let Ok(read_fozdb) = fossilize::StreamArchive::new(&read_fozdb_path, OpenOptions::new().read(true), VIDEOCONV_FOZ_NUM_TAGS) {
+                    let mut chunks = Vec::<(u32, u128)>::new();
+
+                    for stream_id in fozdb.iter_tag(VIDEOCONV_FOZ_TAG_STREAM).cloned().collect::<Vec<u128>>() {
+                        if read_fozdb.has_entry(VIDEOCONV_FOZ_TAG_MKVDATA, stream_id) {
+                            if let Ok(chunks_size) = fozdb.entry_size(VIDEOCONV_FOZ_TAG_STREAM, stream_id) {
+                                let mut buf = vec![0u8; chunks_size].into_boxed_slice();
+                                if fozdb.read_entry(VIDEOCONV_FOZ_TAG_STREAM, stream_id, 0, &mut buf, fossilize::CRCCheck::WithCRC).is_ok() {
+                                    for i in 0..(chunks_size / 16) {
+                                        let offs = i * 16;
+                                        let chunk_id = u128::from_le_bytes(copy_into_array(&buf[offs..offs + 16]));
+                                        chunks.push((VIDEOCONV_FOZ_TAG_VIDEODATA, chunk_id));
+                                    }
+                                }
+                            }
+                            chunks.push((VIDEOCONV_FOZ_TAG_STREAM, stream_id));
+                        }
+                    }
+
+                    if fozdb.discard_entries(&chunks).is_err() {
+                        self.close();
+                    }
+                }
+            }
+        }
+        self.already_cleaned = true;
+    }
+}
+
+static DUMP_FOZDB: Lazy<Mutex<VideoConverterDumpFozdb>> = Lazy::new(|| {
+    Mutex::new(VideoConverterDumpFozdb::new())
 });
 
 struct PadReader<'a> {
@@ -175,14 +242,14 @@ impl<'a> Read for PadReader<'a> {
                 Ok(buf) => {
                     let to_copy;
 
-                    if self.offs + buf.get_size() < self.stride {
-                        to_copy = buf.get_size();
+                    if self.offs + buf.size() < self.stride {
+                        to_copy = buf.size();
                         self.offs += to_copy;
                     }else if self.offs < self.stride {
                         to_copy = self.stride - self.offs;
                         self.offs = self.stride;
                     }else{
-                        to_copy = buf.get_size();
+                        to_copy = buf.size();
                         self.offs += self.stride;
                     };
 
@@ -228,13 +295,15 @@ struct VideoConvState {
 
     upstream_duration: Option<u64>,
     our_duration: Option<u64>,
+
+    transcoded_tag: u32,
 }
 
 impl VideoConvState {
     fn new() -> Result<VideoConvState, gst::LoggableError> {
 
         let read_fozdb_path = std::env::var("MEDIACONV_VIDEO_TRANSCODED_FILE").map_err(|_| {
-            gst_loggable_error!(CAT, "MEDIACONV_VIDEO_TRANSCODED_FILE is not set!")
+            loggable_error!(CAT, "MEDIACONV_VIDEO_TRANSCODED_FILE is not set!")
         })?;
 
         let read_fozdb = match fossilize::StreamArchive::new(&read_fozdb_path, OpenOptions::new().read(true), VIDEOCONV_FOZ_NUM_TAGS) {
@@ -249,15 +318,26 @@ impl VideoConvState {
 
             upstream_duration: None,
             our_duration: None,
+
+            transcoded_tag: VIDEOCONV_FOZ_TAG_MKVDATA,
         })
     }
 
     /* true if the file is transcoded; false if not */
     fn begin_transcode(&mut self, hash: u128) -> bool {
         if let Some(read_fozdb) = &mut self.read_fozdb {
-            if let Ok(transcoded_size) = read_fozdb.entry_size(VIDEOCONV_FOZ_TAG_OGVDATA, hash) {
+            if let Ok(transcoded_size) = read_fozdb.entry_size(VIDEOCONV_FOZ_TAG_MKVDATA, hash) {
+                gst_log!(CAT, "Found an MKV video for hash {}", format_hash(hash));
                 self.transcode_hash = Some(hash);
                 self.our_duration = Some(transcoded_size as u64);
+                self.transcoded_tag = VIDEOCONV_FOZ_TAG_MKVDATA;
+                return true;
+            }
+            if let Ok(transcoded_size) = read_fozdb.entry_size(VIDEOCONV_FOZ_TAG_OGVDATA, hash) {
+                gst_log!(CAT, "Found an OGV video for hash {}", format_hash(hash));
+                self.transcode_hash = Some(hash);
+                self.our_duration = Some(transcoded_size as u64);
+                self.transcoded_tag = VIDEOCONV_FOZ_TAG_OGVDATA;
                 return true;
             }
         }
@@ -265,7 +345,7 @@ impl VideoConvState {
         gst_log!(CAT, "No transcoded video for {}. Substituting a blank video.", format_hash(hash));
 
         self.transcode_hash = None;
-        self.our_duration = Some(include_bytes!("../blank.ogv").len() as u64);
+        self.our_duration = Some(include_bytes!("../../blank.mkv").len() as u64);
 
         false
     }
@@ -274,12 +354,12 @@ impl VideoConvState {
         match self.transcode_hash {
             Some(hash) => {
                 let read_fozdb = self.read_fozdb.as_mut().unwrap();
-                read_fozdb.read_entry(VIDEOCONV_FOZ_TAG_OGVDATA, hash, offs as u64, out, fossilize::CRCCheck::WithoutCRC)
-                    .map_err(|e| gst_loggable_error!(CAT, "Error reading ogvdata: {:?}", e))
+                read_fozdb.read_entry(self.transcoded_tag, hash, offs as u64, out, fossilize::CRCCheck::WithoutCRC)
+                    .map_err(|e| loggable_error!(CAT, "Error reading ogvdata: {:?}", e))
             },
 
             None => {
-                let blank = include_bytes!("../blank.ogv");
+                let blank = include_bytes!("../../blank.mkv");
 
                 let to_copy = std::cmp::min(blank.len() - offs, out.len());
 
@@ -291,22 +371,20 @@ impl VideoConvState {
     }
 }
 
-struct VideoConv {
+pub struct VideoConv {
     state: Mutex<Option<VideoConvState>>,
     sinkpad: gst::Pad,
     srcpad: gst::Pad,
 }
 
+#[glib::object_subclass]
 impl ObjectSubclass for VideoConv {
     const NAME: &'static str = "ProtonVideoConverter";
+    type Type = super::VideoConv;
     type ParentType = gst::Element;
-    type Instance = gst::subclass::ElementInstanceStruct<Self>;
-    type Class = subclass::simple::ClassStruct<Self>;
 
-    glib_object_subclass!();
-
-    fn with_class(klass: &subclass::simple::ClassStruct<Self>) -> Self {
-        let templ = klass.get_pad_template("sink").unwrap();
+    fn with_class(klass: &Self::Class) -> Self {
+        let templ = klass.pad_template("sink").unwrap();
         let sinkpad = gst::Pad::builder_with_template(&templ, Some("sink"))
             .event_function(|pad, parent, event| {
                 VideoConv::catch_panic_pad_function(
@@ -316,13 +394,13 @@ impl ObjectSubclass for VideoConv {
                 )
             }).build();
 
-        let templ = klass.get_pad_template("src").unwrap();
+        let templ = klass.pad_template("src").unwrap();
         let srcpad = gst::Pad::builder_with_template(&templ, Some("src"))
             .getrange_function(|pad, parent, offset, in_buf, size| {
                 VideoConv::catch_panic_pad_function(
                     parent,
                     || Err(gst::FlowError::Error),
-                    |videoconv, element| videoconv.get_range(pad, element, offset, in_buf, size)
+                    |videoconv, element| videoconv.range(pad, element, offset, in_buf, size)
                 )
             })
             .query_function(|pad, parent, query| {
@@ -335,7 +413,7 @@ impl ObjectSubclass for VideoConv {
             .activatemode_function(|pad, parent, mode, active| {
                 VideoConv::catch_panic_pad_function(
                     parent,
-                    || Err(gst_loggable_error!(CAT, "Panic activating srcpad with mode")),
+                    || Err(loggable_error!(CAT, "Panic activating srcpad with mode")),
                     |videoconv, element| videoconv.src_activatemode(pad, element, mode, active)
                 )
             }).build();
@@ -346,56 +424,68 @@ impl ObjectSubclass for VideoConv {
             srcpad,
         }
     }
-
-    fn class_init(klass: &mut subclass::simple::ClassStruct<Self>) {
-
-        klass.set_metadata(
-            "Proton video converter",
-            "Codec/Parser",
-            "Converts video for Proton",
-            "Andrew Eikum <aeikum@codeweavers.com>");
-
-        let mut caps = gst::Caps::new_empty();
-        {
-            let caps = caps.get_mut().unwrap();
-            caps.append(gst::Caps::builder("video/x-ms-asf").build());
-            caps.append(gst::Caps::builder("video/x-msvideo").build());
-            caps.append(gst::Caps::builder("video/mpeg").build());
-            caps.append(gst::Caps::builder("video/quicktime").build());
-        }
-        let sink_pad_template = gst::PadTemplate::new(
-            "sink",
-            gst::PadDirection::Sink,
-            gst::PadPresence::Always,
-            &caps).unwrap();
-        klass.add_pad_template(sink_pad_template);
-
-        let caps = gst::Caps::builder("application/ogg").build();
-        let src_pad_template = gst::PadTemplate::new(
-            "src",
-            gst::PadDirection::Src,
-            gst::PadPresence::Always,
-            &caps).unwrap();
-        klass.add_pad_template(src_pad_template);
-    }
 }
 
 impl ObjectImpl for VideoConv {
-    glib_object_impl!();
-
-    fn constructed(&self, obj: &glib::Object) {
+    fn constructed(&self, obj: &Self::Type) {
         self.parent_constructed(obj);
 
-        let element = obj.downcast_ref::<gst::Element>().unwrap();
-        element.add_pad(&self.sinkpad).unwrap();
-        element.add_pad(&self.srcpad).unwrap();
+        obj.add_pad(&self.sinkpad).unwrap();
+        obj.add_pad(&self.srcpad).unwrap();
     }
 }
 
 impl ElementImpl for VideoConv {
+    fn metadata() -> Option<&'static gst::subclass::ElementMetadata> {
+        static ELEMENT_METADATA: Lazy<gst::subclass::ElementMetadata> = Lazy::new(|| {
+            gst::subclass::ElementMetadata::new(
+                "Proton video converter",
+                "Codec/Demuxer",
+                "Converts video for Proton",
+                "Andrew Eikum <aeikum@codeweavers.com>"
+            )
+        });
+
+        Some(&*ELEMENT_METADATA)
+    }
+
+    fn pad_templates() -> &'static [gst::PadTemplate] {
+        static PAD_TEMPLATES: Lazy<Vec<gst::PadTemplate>> = Lazy::new(|| {
+            let mut caps = gst::Caps::new_empty();
+            {
+                let caps = caps.get_mut().unwrap();
+                caps.append(gst::Caps::builder("video/x-ms-asf").build());
+                caps.append(gst::Caps::builder("video/x-msvideo").build());
+                caps.append(gst::Caps::builder("video/mpeg").build());
+                caps.append(gst::Caps::builder("video/quicktime").build());
+            }
+            let sink_pad_template = gst::PadTemplate::new(
+                "sink",
+                gst::PadDirection::Sink,
+                gst::PadPresence::Always,
+                &caps).unwrap();
+
+            let mut caps = gst::Caps::new_empty();
+            {
+                let caps = caps.get_mut().unwrap();
+                caps.append(gst::Caps::builder("video/x-matroska").build());
+                caps.append(gst::Caps::builder("application/ogg").build());
+            }
+            let src_pad_template = gst::PadTemplate::new(
+                "src",
+                gst::PadDirection::Src,
+                gst::PadPresence::Always,
+                &caps).unwrap();
+
+            vec![src_pad_template, sink_pad_template]
+        });
+
+        PAD_TEMPLATES.as_ref()
+    }
+
     fn change_state(
         &self,
-        element: &gst::Element,
+        element: &super::VideoConv,
         transition: gst::StateChange
     ) -> Result<gst::StateChangeSuccess, gst::StateChangeError> {
 
@@ -431,12 +521,12 @@ impl ElementImpl for VideoConv {
 }
 
 struct StreamSerializer<'a> {
-    stream: &'a Vec<u128>,
+    stream: &'a [u128],
     cur_idx: usize,
 }
 
 impl<'a> StreamSerializer<'a> {
-    fn new(stream: &'a Vec<u128>) -> Self {
+    fn new(stream: &'a [u128]) -> Self {
         StreamSerializer {
             stream,
             cur_idx: 0,
@@ -458,10 +548,10 @@ impl <'a> Read for StreamSerializer<'a> {
 }
 
 impl VideoConv {
-    fn get_range(
+    fn range(
         &self,
         _pad: &gst::Pad,
-        _element: &gst::Element,
+        _element: &super::VideoConv,
         offset: u64,
         in_buf: Option<&mut gst::BufferRef>,
         requested_size: u32,
@@ -469,10 +559,14 @@ impl VideoConv {
 
         let mut state = self.state.lock().unwrap();
 
-        let state = match &mut *state {
+        let mut state = match &mut *state {
             Some(s) => s,
             None => { return Err(gst::FlowError::Error); }
         };
+
+        if state.upstream_duration.is_none() {
+            self.query_upstream_duration(&mut state);
+        }
 
         let ups_offset = self.duration_ours_to_upstream(&state, offset).unwrap();
         let ups_requested_size = self.duration_ours_to_upstream(&state, requested_size as u64).unwrap() as u32;
@@ -490,7 +584,7 @@ impl VideoConv {
                         .map_err(|e| { e.log(); gst::FlowError::Error })?;
                 }
 
-                if readed > 0 || buf.get_size() == 0 {
+                if readed > 0 || buf.size() == 0 {
                     buf.set_size(readed);
                     return Ok(gst::PadGetRangeSuccess::FilledBuffer);
                 }
@@ -510,7 +604,7 @@ impl VideoConv {
 
                 let mut b = map.into_buffer();
 
-                if readed > 0 || b.get_size() == 0 {
+                if readed > 0 || b.size() == 0 {
                     b.get_mut().unwrap().set_size(readed);
                     return Ok(gst::PadGetRangeSuccess::NewBuffer(b));
                 }
@@ -523,13 +617,40 @@ impl VideoConv {
     fn sink_event(
         &self,
         pad: &gst::Pad,
-        element: &gst::Element,
+        element: &super::VideoConv,
         event: gst::Event
     ) -> bool {
         gst_log!(CAT, obj:pad, "Got an event {:?}", event);
         match event.view() {
             EventView::Caps(_) => {
-                let caps = gst::Caps::builder("application/ogg").build();
+
+                /* push_event, below, can also grab state and cause a deadlock, so make sure it's
+                 * released before calling */
+                let caps = {
+                    let mut state = self.state.lock().unwrap();
+
+                    let mut state = match &mut *state {
+                        Some(s) => s,
+                        None => { gst_error!(CAT, "VideoConv not yet in READY state?"); return false; },
+                    };
+
+                    if !self.sinkpad.activate_mode(gst::PadMode::Pull, true).is_ok() {
+                        gst_error!(CAT, "Failed to activate sinkpad in pull mode");
+                        return false;
+                    }
+
+                    if !self.init_transcode(&mut state).is_ok() {
+                        gst_error!(CAT, "Failed to init transcode");
+                        return false;
+                    }
+
+                    match state.transcoded_tag {
+                        VIDEOCONV_FOZ_TAG_MKVDATA => gst::Caps::builder("video/x-matroska").build(),
+                        VIDEOCONV_FOZ_TAG_OGVDATA => gst::Caps::builder("application/ogg").build(),
+                        _ => { return false; },
+                    }
+                };
+
                 self.srcpad.push_event(gst::event::Caps::new(&caps))
             }
             _ => pad.event_default(Some(element), event)
@@ -540,12 +661,8 @@ impl VideoConv {
         let mut query = gst::query::Duration::new(gst::Format::Bytes);
 
         if self.sinkpad.peer_query(&mut query) {
-            /* XXX: what? */
-            let res = query.get_result();
-            drop(res);
-            state.upstream_duration = match query.get_result() {
-                gst::format::GenericFormattedValue::Bytes(b) =>
-                    *b,
+            state.upstream_duration = match query.result().try_into().unwrap() {
+                Some(gst::format::Bytes(size)) => Some(size),
                 _ => None,
             }
         }else{
@@ -565,7 +682,7 @@ impl VideoConv {
     fn src_query(
         &self,
         pad: &gst::Pad,
-        element: &gst::Element,
+        element: &super::VideoConv,
         query: &mut gst::QueryRef) -> bool
     {
         gst_log!(CAT, obj: pad, "got query: {:?}", query);
@@ -577,7 +694,7 @@ impl VideoConv {
                     return res;
                 }
 
-                let (flags, min, max, align) = peer_query.get_result();
+                let (flags, min, max, align) = peer_query.result();
 
                 q.set(flags, min, max, align);
                 q.add_scheduling_modes(&[gst::PadMode::Pull]);
@@ -592,13 +709,13 @@ impl VideoConv {
                     None => { return false; }
                 };
 
-                if let None = state.upstream_duration {
+                if state.upstream_duration.is_none() {
                     self.query_upstream_duration(&mut state);
                 }
 
                 if let Some(sz) = state.our_duration {
-                    if q.get_format() == gst::Format::Bytes {
-                        q.set(gst::format::Bytes::from(sz));
+                    if q.format() == gst::Format::Bytes {
+                        q.set(gst::format::Bytes(sz));
                         return true
                     }
                 }
@@ -614,8 +731,10 @@ impl VideoConv {
     }
 
     fn dump_upstream_data(&self, hash: u128) -> io::Result<()> {
-        let mut db = (*DUMP_FOZDB).lock().unwrap();
-        let db = match &mut *db {
+
+        let db = &mut (*DUMP_FOZDB).lock().unwrap();
+        let mut db = &mut db.open(true).fozdb;
+        let db = match &mut db {
             Some(d) => d,
             None => { gst_error!(CAT, "Unable to open fozdb!"); return Err(io::Error::new(io::ErrorKind::Other, "unable to open fozdb")); },
         };
@@ -649,11 +768,15 @@ impl VideoConv {
         state: &mut VideoConvState
     ) -> Result<(), gst::LoggableError> {
 
-        let hash = self.hash_upstream_data();
+        if state.transcode_hash.is_none() {
+            (*DUMP_FOZDB).lock().unwrap().discard_transcoded();
 
-        if let Ok(hash) = hash {
-            if !state.begin_transcode(hash) {
-                self.dump_upstream_data(hash).map_err(|_| gst_loggable_error!(CAT, "Dumping file to disk failed"))?;
+            let hash = self.hash_upstream_data();
+
+            if let Ok(hash) = hash {
+                if !state.begin_transcode(hash) {
+                    self.dump_upstream_data(hash).map_err(|_| loggable_error!(CAT, "Dumping file to disk failed"))?;
+                }
             }
         }
 
@@ -663,7 +786,7 @@ impl VideoConv {
     fn src_activatemode(
         &self,
         _pad: &gst::Pad,
-        _element: &gst::Element,
+        _element: &super::VideoConv,
         mode: gst::PadMode,
         active: bool
     ) -> Result<(), gst::LoggableError> {
@@ -675,7 +798,7 @@ impl VideoConv {
 
             let mut state = match &mut *state {
                 Some(s) => s,
-                None => { return Err(gst_loggable_error!(CAT, "VideoConv not yet in READY state?")); }
+                None => { return Err(loggable_error!(CAT, "VideoConv not yet in READY state?")); }
             };
 
             /* once we're initted in pull mode, we can start transcoding */
@@ -684,13 +807,4 @@ impl VideoConv {
 
         Ok(())
     }
-
-}
-
-pub fn register(plugin: &gst::Plugin) -> Result<(), glib::BoolError> {
-    gst::Element::register(
-        Some(plugin),
-        "protonvideoconverter",
-        gst::Rank::Marginal,
-        VideoConv::get_type())
 }
