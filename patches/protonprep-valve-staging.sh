@@ -410,5 +410,9 @@
 
 ### (2-7) WINE CUSTOM PATCHES ###
 
+    echo "WINE: -HOTFIX- Fix NosTale mouse bug (very big thanks to Morsisko, NosApki team and Linux community)"
+    # NosTale patch
+    patch -Np1 < ../patches/wine-hotfixes/upstream/nostale.patch
+
 ### END WINE CUSTOM PATCHES ###
 ### END WINE PATCHING ###
