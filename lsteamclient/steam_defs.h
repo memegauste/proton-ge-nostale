@@ -19,6 +19,7 @@ typedef int64 lint64;
 typedef uint64 ulint64;
 
 typedef uint32_t EUserUGCList,
+        EUGCContentDescriptorID,
         EUGCMatchingUGCType,
         EUserUGCListSortOrder,
         EUGCQuery,
@@ -104,7 +105,9 @@ typedef uint32_t EUserUGCList,
         ERemoteStorageFilePathType,
         ESteamInputGlyphSize,
         EControllerHapticLocation,
-        ESteamNetworkingFakeIPType
+        ESteamNetworkingFakeIPType,
+        ECommunityProfileItemProperty,
+        ECommunityProfileItemType
 ;
 
 /* XXX NO */
@@ -123,6 +126,7 @@ typedef struct ControllerDigitalActionData_t { unsigned char a[2]; } ControllerD
 typedef struct ControllerMotionData_t { unsigned char a[40]; } ControllerMotionData_t;
 typedef struct SteamNetworkPingLocation_t { uint8 m_data[ 512 ]; } SteamNetworkPingLocation_t;
 typedef struct SteamIPAddress_t { uint8 m_data[20]; } SteamIPAddress_t;
+typedef struct ScePadTriggerEffectParam { uint8 m_data[120]; } ScePadTriggerEffectParam;
 
 #pragma pack( push, 1 )
 

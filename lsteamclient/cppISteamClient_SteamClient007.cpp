@@ -1,6 +1,7 @@
 #include "steam_defs.h"
 #pragma push_macro("__cdecl")
 #undef __cdecl
+#define __cdecl
 #include "steamworks_sdk_103/steam_api.h"
 #pragma pop_macro("__cdecl")
 #include "steamclient_private.h"
@@ -12,7 +13,7 @@ extern "C" {
 #include "cppISteamClient_SteamClient007.h"
 HSteamPipe cppISteamClient_SteamClient007_CreateSteamPipe(void *linux_side)
 {
-    return ((ISteamClient*)linux_side)->CreateSteamPipe();
+    return after_steam_pipe_create(((ISteamClient*)linux_side)->CreateSteamPipe());
 }
 
 bool cppISteamClient_SteamClient007_BReleaseSteamPipe(void *linux_side, HSteamPipe hSteamPipe)

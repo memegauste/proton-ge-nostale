@@ -38,7 +38,8 @@ endef
 
 export $(2)_MESON_CROSS$(3)
 
-ifeq ($(CONTAINER),1)
+$$($(2)_SRC)/meson.build: | $$(OBJ)/.$(1)-post-source
+
 $$(OBJ)/.$(1)-configure$(3): $$($(2)_SRC)/meson.build
 	@echo ":: configuring $(3)bit $(1)..." >&2
 	rm -rf "$$($(2)_OBJ$(3))/meson-private/coredata.dat"
@@ -59,10 +60,9 @@ $$(OBJ)/.$(1)-configure$(3): $$($(2)_SRC)/meson.build
 
 $$(OBJ)/.$(1)-build$(3):
 	@echo ":: building $(3)bit $(1)..." >&2
-	env $$($(2)_ENV$(3)) \
-	ninja $$(filter -j%,$$(MAKEFLAGS)) -C "$$($(2)_OBJ$(3))" install $(-v?)
+	+env $$($(2)_ENV$(3)) \
+	ninja -C "$$($(2)_OBJ$(3))" install
 	touch $$@
-endif
 endef
 
 MESON_CPU32 = x86

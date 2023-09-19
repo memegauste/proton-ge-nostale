@@ -1,14 +1,15 @@
 #include "steam_defs.h"
 #pragma push_macro("__cdecl")
 #undef __cdecl
-#include "steamworks_sdk_153a/steam_api.h"
-#include "steamworks_sdk_153a/steamnetworkingtypes.h"
+#define __cdecl
+#include "steamworks_sdk_157/steam_api.h"
+#include "steamworks_sdk_157/steamnetworkingtypes.h"
 #pragma pop_macro("__cdecl")
 #include "steamclient_private.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define SDKVER_153a
+#define SDKVER_157
 #include "struct_converters.h"
 #include "cppISteamApps_STEAMAPPS_INTERFACE_VERSION008.h"
 bool cppISteamApps_STEAMAPPS_INTERFACE_VERSION008_BIsSubscribed(void *linux_side)
@@ -154,6 +155,11 @@ bool cppISteamApps_STEAMAPPS_INTERFACE_VERSION008_BIsSubscribedFromFamilySharing
 bool cppISteamApps_STEAMAPPS_INTERFACE_VERSION008_BIsTimedTrial(void *linux_side, uint32 * punSecondsAllowed, uint32 * punSecondsPlayed)
 {
     return ((ISteamApps*)linux_side)->BIsTimedTrial((uint32 *)punSecondsAllowed, (uint32 *)punSecondsPlayed);
+}
+
+bool cppISteamApps_STEAMAPPS_INTERFACE_VERSION008_SetDlcContext(void *linux_side, AppId_t nAppID)
+{
+    return ((ISteamApps*)linux_side)->SetDlcContext((AppId_t)nAppID);
 }
 
 #ifdef __cplusplus

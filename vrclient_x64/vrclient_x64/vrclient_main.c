@@ -1,6 +1,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#define __USE_GNU
 #include <dlfcn.h>
 #include <limits.h>
 #include <stdint.h>
@@ -8,6 +9,7 @@
 #include "windef.h"
 #include "winbase.h"
 #include "winnls.h"
+#include "winternl.h"
 #include "wine/debug.h"
 
 #include "vrclient_defs.h"
@@ -35,11 +37,13 @@ typedef struct winRenderModel_t_1015 winRenderModel_t_1015;
 typedef struct winRenderModel_TextureMap_t_1015 winRenderModel_TextureMap_t_1015;
 #include "cppIVRRenderModels_IVRRenderModels_005.h"
 
-/* this is cast to 1015 during load_linux_texture_map, so ensure they're
- * binary compatible before updating this number */
-typedef struct winRenderModel_t_1168 winRenderModel_t_1168;
-typedef struct winRenderModel_TextureMap_t_1168 winRenderModel_TextureMap_t_1168;
+/* this is converted to 1237 during load_linux_texture_map, so ensure new
+ * structure is compatible before updating this number */
+typedef struct winRenderModel_t_1237 winRenderModel_t_1237;
+typedef struct winRenderModel_TextureMap_t_1237 winRenderModel_TextureMap_t_1237;
 #include "cppIVRRenderModels_IVRRenderModels_006.h"
+
+#include "wine/unixlib.h"
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
@@ -370,9 +374,32 @@ static VkPhysicalDevice_T *(WINAPI *get_native_VkPhysicalDevice)(VkPhysicalDevic
 static VkPhysicalDevice_T *(WINAPI *get_wrapped_VkPhysicalDevice)(VkInstance_T *, VkPhysicalDevice_T *);
 static VkQueue_T *(WINAPI *get_native_VkQueue)(VkQueue_T *);
 
+static void *get_winevulkan_unix_lib_handle(HMODULE hvulkan)
+{
+    unixlib_handle_t unix_funcs;
+    NTSTATUS status;
+    Dl_info info;
+
+    status = NtQueryVirtualMemory(GetCurrentProcess(), hvulkan, (MEMORY_INFORMATION_CLASS)1000 /*MemoryWineUnixFuncs*/,
+            &unix_funcs, sizeof(unix_funcs), NULL);
+    if (status)
+    {
+        WINE_ERR("NtQueryVirtualMemory status %#x.\n", (int)status);
+        return NULL;
+    }
+    if (!dladdr((void *)(ULONG_PTR)unix_funcs, &info))
+    {
+        WINE_ERR("dladdr failed.\n");
+        return NULL;
+    }
+    WINE_TRACE("path %s.\n", info.dli_fname);
+    return dlopen(info.dli_fname, RTLD_NOW);
+}
+
 static void load_vk_unwrappers(void)
 {
     static HMODULE h = NULL;
+    void *unix_handle;
 
     if(h)
         /* already loaded */
@@ -384,11 +411,28 @@ static void load_vk_unwrappers(void)
         return;
     }
 
-    get_native_VkDevice = (void*)GetProcAddress(h, "__wine_get_native_VkDevice");
-    get_native_VkInstance = (void*)GetProcAddress(h, "__wine_get_native_VkInstance");
-    get_native_VkPhysicalDevice = (void*)GetProcAddress(h, "__wine_get_native_VkPhysicalDevice");
-    get_wrapped_VkPhysicalDevice = (void*)GetProcAddress(h, "__wine_get_wrapped_VkPhysicalDevice");
-    get_native_VkQueue = (void*)GetProcAddress(h, "__wine_get_native_VkQueue");
+    if (!(unix_handle = get_winevulkan_unix_lib_handle(h)))
+    {
+        ERR("Unable to open winevulkan.so.\n");
+        return;
+    }
+
+#define L(name) \
+    if (!(name = dlsym(unix_handle, "__wine_"#name))) \
+    {\
+        ERR("%s not found.\n", #name);\
+        dlclose(unix_handle);\
+        return;\
+    }
+
+    L(get_native_VkDevice);
+    L(get_native_VkInstance);
+    L(get_native_VkPhysicalDevice);
+    L(get_wrapped_VkPhysicalDevice);
+    L(get_native_VkQueue);
+#undef L
+
+    dlclose(unix_handle);
 }
 
 static bool is_hmd_present_reg(void)
@@ -1329,15 +1373,29 @@ uint32_t ivrcompositor_get_vulkan_device_extensions_required(
 }
 
 #pragma pack( push, 8 )
+struct winRenderModel_TextureMap_t_0918 {
+    uint16_t unWidth;
+    uint16_t unHeight;
+    const uint8_t * rubTextureMapData;
+}   __attribute__ ((ms_struct));;
+
 struct winRenderModel_TextureMap_t_1015 {
     uint16_t unWidth;
     uint16_t unHeight;
+    const uint8_t * rubTextureMapData;
+}  __attribute__ ((ms_struct));
+
+struct winRenderModel_TextureMap_t_1237 {
+    uint16_t unWidth;
+    uint16_t unHeight;
     const uint8_t *rubTextureMapData;
+    EVRRenderModelTextureFormat format;
+    uint16_t unMipLevels;
 }  __attribute__ ((ms_struct));
 #pragma pack( pop )
 
 static EVRRenderModelError load_into_texture_d3d11(ID3D11Texture2D *texture,
-        const struct winRenderModel_TextureMap_t_1015 *data)
+        const struct winRenderModel_TextureMap_t_1237 *data)
 {
     D3D11_TEXTURE2D_DESC texture_desc;
     ID3D11DeviceContext *context;
@@ -1365,6 +1423,10 @@ static EVRRenderModelError load_into_texture_d3d11(ID3D11Texture2D *texture,
         FIXME("Unexpected height %u.\n", texture_desc.Height);
         return VRRenderModelError_NotSupported;
     }
+    if (data->format)
+        FIXME("Unsupported texture map format %d.\n", data->format);
+    if (data->unMipLevels)
+        FIXME("Unsupported unMipLevels %u.\n", data->unMipLevels);
 
     texture->lpVtbl->GetDevice(texture, &device);
     device->lpVtbl->GetImmediateContext(device, &context);
@@ -1378,32 +1440,50 @@ static EVRRenderModelError load_into_texture_d3d11(ID3D11Texture2D *texture,
 }
 
 static EVRRenderModelError load_linux_texture_map(void *linux_side, TextureID_t texture_id,
-        struct winRenderModel_TextureMap_t_1015 **texture_map, unsigned int version)
+        struct winRenderModel_TextureMap_t_1237 **texture_map, unsigned int version)
 {
+    EVRRenderModelError ret;
+
     switch(version){
     case 4:
-        return cppIVRRenderModels_IVRRenderModels_004_LoadTexture_Async(linux_side, texture_id, (struct winRenderModel_TextureMap_t_0918 **)texture_map);
+    {
+        struct winRenderModel_TextureMap_t_0918 *orig_map;
+        if ((ret = cppIVRRenderModels_IVRRenderModels_004_LoadTexture_Async(linux_side, texture_id, &orig_map)))
+            return ret;
+        *texture_map = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(**texture_map));
+        memcpy(*texture_map, orig_map, sizeof(*orig_map));
+        cppIVRRenderModels_IVRRenderModels_004_FreeTexture(linux_side, orig_map);
+        return 0;
+    }
     case 5:
-        return cppIVRRenderModels_IVRRenderModels_005_LoadTexture_Async(linux_side, texture_id, texture_map);
+    {
+        struct winRenderModel_TextureMap_t_1015 *orig_map;
+        if ((ret = cppIVRRenderModels_IVRRenderModels_005_LoadTexture_Async(linux_side, texture_id, &orig_map)))
+            return ret;
+        *texture_map = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(**texture_map));
+        memcpy(*texture_map, orig_map, sizeof(*orig_map));
+        cppIVRRenderModels_IVRRenderModels_005_FreeTexture(linux_side, orig_map);
+        return 0;
+    }
     case 6:
-        return cppIVRRenderModels_IVRRenderModels_006_LoadTexture_Async(linux_side, texture_id, (struct winRenderModel_TextureMap_t_1168 **)texture_map);
+        return cppIVRRenderModels_IVRRenderModels_006_LoadTexture_Async(linux_side, texture_id, texture_map);
     }
     FIXME("Unsupported IVRRenderModels version! %u\n", version);
     return VRRenderModelError_NotSupported;
 }
 
 static void free_linux_texture_map(void *linux_side,
-        struct winRenderModel_TextureMap_t_1015 *texture_map, unsigned int version)
+        struct winRenderModel_TextureMap_t_1237 *texture_map, unsigned int version)
 {
     switch(version){
     case 4:
-        cppIVRRenderModels_IVRRenderModels_004_FreeTexture(linux_side, (struct winRenderModel_TextureMap_t_0918 *)texture_map);
+        HeapFree(GetProcessHeap(), 0, texture_map);
         break;
     case 5:
-        cppIVRRenderModels_IVRRenderModels_005_FreeTexture(linux_side, texture_map);
+        HeapFree(GetProcessHeap(), 0, texture_map);
         break;
     case 6:
-        cppIVRRenderModels_IVRRenderModels_006_FreeTexture(linux_side, (struct winRenderModel_TextureMap_t_1168 *)texture_map);
+        cppIVRRenderModels_IVRRenderModels_006_FreeTexture(linux_side, texture_map);
         break;
     default:
         FIXME("Unsupported IVRRenderModels version! %u\n", version);
@@ -1416,7 +1496,7 @@ EVRRenderModelError ivrrendermodels_load_texture_d3d11_async(
         void *linux_side, TextureID_t texture_id, void *device,
         void **dst_texture, unsigned int version)
 {
-    struct winRenderModel_TextureMap_t_1015 *texture_map;
+    struct winRenderModel_TextureMap_t_1237 *texture_map;
     EVRRenderModelError error;
     D3D11_TEXTURE2D_DESC desc;
     ID3D11Device *d3d11_device = device;
@@ -1483,7 +1563,7 @@ EVRRenderModelError ivrrendermodels_load_into_texture_d3d11_async(
         EVRRenderModelError (*cpp_func)(void *, TextureID_t, void *),
         void *linux_side, TextureID_t texture_id, void *dst_texture, unsigned int version)
 {
-    struct winRenderModel_TextureMap_t_1015 *texture_map;
+    struct winRenderModel_TextureMap_t_1237 *texture_map;
     IUnknown *unk = dst_texture;
     EVRRenderModelError error;
     ID3D11Texture2D *texture;

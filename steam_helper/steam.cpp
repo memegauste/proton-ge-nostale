@@ -36,10 +36,12 @@
 #define WIN32_NO_STATUS
 #include <windows.h>
 #include <winternl.h>
+#include <shlwapi.h>
 #include <shlobj.h>
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
+#define _USE_GNU
 #include <dlfcn.h>
 
 #pragma push_macro("_WIN32")
@@ -54,6 +56,7 @@
 
 #include "json/json.h"
 
+#include "wine/unixlib.h"
 #include "wine/heap.h"
 #include "wine/vulkan.h"
 #include "openvr.h"
@@ -103,7 +106,7 @@ static DWORD WINAPI create_steam_window(void *arg)
 /* requires steam API to be initialized */
 static void setup_steam_registry(void)
 {
-    const char *ui_lang;
+    const char *ui_lang, *language, *languages, *locale = NULL;
     uint32 appid;
     char buf[256];
     HKEY key;
@@ -129,6 +132,49 @@ static void setup_steam_registry(void)
         RegCloseKey(key);
     }
     else WINE_ERR("Could not create key: %u\n", status);
+
+    language = SteamApps()->GetCurrentGameLanguage();
+    languages = SteamApps()->GetAvailableGameLanguages();
+    WINE_TRACE( "Game language %s, available %s\n", wine_dbgstr_a(language), wine_dbgstr_a(languages) );
+
+    if (!language) locale = NULL;
+    else if (!strcmp( language, "arabic" )) locale = "ar_001.UTF-8";
+    else if (!strcmp( language, "bulgarian" )) locale = "bg_BG.UTF-8";
+    else if (!strcmp( language, "schinese" )) locale = "zh_CN.UTF-8";
+    else if (!strcmp( language, "tchinese" )) locale = "zh_TW.UTF-8";
+    else if (!strcmp( language, "czech" )) locale = "cs_CZ.UTF-8";
+    else if (!strcmp( language, "danish" )) locale = "da_DK.UTF-8";
+    else if (!strcmp( language, "dutch" )) locale = "nl_NL.UTF-8";
+    else if (!strcmp( language, "english" )) locale = "en_US.UTF-8";
+    else if (!strcmp( language, "finnish" )) locale = "fi_FI.UTF-8";
+    else if (!strcmp( language, "french" )) locale = "fr_FR.UTF-8";
+    else if (!strcmp( language, "german" )) locale = "de_DE.UTF-8";
+    else if (!strcmp( language, "greek" )) locale = "el_GR.UTF-8";
+    else if (!strcmp( language, "hungarian" )) locale = "hu_HU.UTF-8";
+    else if (!strcmp( language, "italian" )) locale = "it_IT.UTF-8";
+    else if (!strcmp( language, "japanese" )) locale = "ja_JP.UTF-8";
+    else if (!strcmp( language, "koreana" )) locale = "ko_KR.UTF-8";
+    else if (!strcmp( language, "norwegian" )) locale = "nb_NO.UTF-8";
+    else if (!strcmp( language, "polish" )) locale = "pl_PL.UTF-8";
+    else if (!strcmp( language, "portuguese" )) locale = "pt_PT.UTF-8";
+    else if (!strcmp( language, "brazilian" )) locale = "pt_BR.UTF-8";
+    else if (!strcmp( language, "romanian" )) locale = "ro_RO.UTF-8";
+    else if (!strcmp( language, "russian" )) locale = "ru_RU.UTF-8";
+    else if (!strcmp( language, "spanish" )) locale = "es_ES.UTF-8";
+    else if (!strcmp( language, "latam" )) locale = "es_419.UTF-8";
+    else if (!strcmp( language, "swedish" )) locale = "sv_SE.UTF-8";
+    else if (!strcmp( language, "thai" )) locale = "th_TH.UTF-8";
+    else if (!strcmp( language, "turkish" )) locale = "tr_TR.UTF-8";
+    else if (!strcmp( language, "ukrainian" )) locale = "uk_UA.UTF-8";
+    else if (!strcmp( language, "vietnamese" )) locale = "vi_VN.UTF-8";
+    else WINE_FIXME( "Unsupported game language %s\n", wine_dbgstr_a(language) );
+
+    if (locale)
+    {
+        WINE_FIXME( "Game language %s, defaulting LC_CTYPE / LC_MESSAGES to %s.\n", wine_dbgstr_a(language), locale );
+        setenv( "LC_CTYPE", locale, FALSE );
+        setenv( "LC_MESSAGES", locale, FALSE );
+    }
 }
 
 static void copy_to_win(const char *unix_path, const WCHAR *win_path)
@@ -590,6 +636,28 @@ extern "C"
     VkPhysicalDevice WINAPI __wine_get_native_VkPhysicalDevice(VkPhysicalDevice phys_dev);
 };
 
+static void *get_winevulkan_unix_lib_handle(HMODULE hvulkan)
+{
+    unixlib_handle_t unix_funcs;
+    NTSTATUS status;
+    Dl_info info;
+
+    status = NtQueryVirtualMemory(GetCurrentProcess(), hvulkan, (MEMORY_INFORMATION_CLASS)1000 /*MemoryWineUnixFuncs*/,
+            &unix_funcs, sizeof(unix_funcs), NULL);
+    if (status)
+    {
+        WINE_ERR("NtQueryVirtualMemory status %#x.\n", (int)status);
+        return NULL;
+    }
+    if (!dladdr((void *)(ULONG_PTR)unix_funcs, &info))
+    {
+        WINE_ERR("dladdr failed.\n");
+        return NULL;
+    }
+    WINE_TRACE("path %s.\n", info.dli_fname);
+    return dlopen(info.dli_fname, RTLD_NOW);
+}
+
 static DWORD WINAPI initialize_vr_data(void *arg)
 {
     int (WINAPI *p__wineopenxr_get_extensions_internal)(char **instance_extensions, char **device_extensions);
@@ -615,6 +683,7 @@ static DWORD WINAPI initialize_vr_data(void *arg)
     unsigned int length;
     HMODULE hwineopenxr;
     void *lib_vrclient;
+    void *unix_handle;
     DWORD hmd_present;
     int return_code;
     LSTATUS status;
@@ -699,8 +768,23 @@ static DWORD WINAPI initialize_vr_data(void *arg)
     USE_VULKAN_PROC(vkDestroyInstance)
     USE_VULKAN_PROC(vkEnumeratePhysicalDevices)
     USE_VULKAN_PROC(vkGetPhysicalDeviceProperties)
-    USE_VULKAN_PROC(__wine_get_native_VkPhysicalDevice)
 #undef USE_VULKAN_PROC
+
+    if (!(unix_handle = get_winevulkan_unix_lib_handle(hvulkan)))
+    {
+        WINE_ERR("winevulkan.so not found.\n");
+        goto done;
+    }
+    decltype(__wine_get_native_VkPhysicalDevice) *p__wine_get_native_VkPhysicalDevice;
+    p__wine_get_native_VkPhysicalDevice = reinterpret_cast<decltype(__wine_get_native_VkPhysicalDevice) *>
+            (dlsym(unix_handle, "__wine_get_native_VkPhysicalDevice"));
+
+    dlclose(unix_handle);
+    if (!__wine_get_native_VkPhysicalDevice)
+    {
+        WINE_ERR("__wine_get_native_VkPhysicalDevice not found.\n");
+        goto done;
+    }
 
     parse_extensions(buffer, &instance_extensions_count, &instance_extensions);
 
@@ -764,7 +848,7 @@ static DWORD WINAPI initialize_vr_data(void *arg)
         if ((status = RegSetValueExA(vr_key, name, 0, REG_SZ, (BYTE *)buffer, length)))
         {
             WINE_ERR("Could not set %s value, status %#x.\n", name, status);
-            return FALSE;
+            goto done;
         }
     }
 
@@ -781,13 +865,13 @@ static DWORD WINAPI initialize_vr_data(void *arg)
                         (BYTE *)xr_inst_ext, strlen(xr_inst_ext) + 1)))
                 {
                     WINE_ERR("Could not set openxr_vulkan_instance_extensions value, status %#x.\n", status);
-                    return FALSE;
+                    goto done;
                 }
                 if ((status = RegSetValueExA(vr_key, "openxr_vulkan_device_extensions", 0, REG_SZ,
                         (BYTE *)xr_dev_ext, strlen(xr_dev_ext) + 1)))
                 {
                     WINE_ERR("Could not set openxr_vulkan_device_extensions value, status %#x.\n", status);
-                    return FALSE;
+                    goto done;
                 }
             }
         }
@@ -1093,11 +1177,26 @@ run:
     if (use_shell_execute && lstrlenW(cmdline) > 10 && !memcmp(cmdline, L"link2ea://", 10 *sizeof(WCHAR)))
     {
         HDESK desktop = GetThreadDesktop(GetCurrentThreadId());
-        DWORD timeout = 300;
+        DWORD is_unavailable, type, size;
+        DWORD timeout = 3000;
+        HKEY eakey;
 
         link2ea = TRUE;
         if (!SetUserObjectInformationA(desktop, 1000, &timeout, sizeof(timeout)))
             WINE_ERR("Failed to set desktop timeout, err %u.\n", GetLastError());
+
+        if (!RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"Software\\Electronic Arts\\EA Desktop", 0, KEY_ALL_ACCESS, &eakey))
+        {
+            size = sizeof(is_unavailable);
+            if (!RegQueryValueExW(eakey, L"IsUnavailable", NULL, &type, (BYTE *)&is_unavailable, &size)
+                    && type == REG_DWORD && is_unavailable)
+            {
+                WINE_ERR("EA Desktop\\IsUnavailable is set, clearing.\n");
+                is_unavailable = 0;
+                RegSetValueExW(eakey, L"IsUnavailable", 0, REG_DWORD, (BYTE *)&is_unavailable, sizeof(is_unavailable));
+            }
+            RegCloseKey(eakey);
+        }
     }
     hide_window = env_nonzero("PROTON_HIDE_PROCESS_WINDOW");
 
@@ -1152,46 +1251,73 @@ run:
     }
 }
 
-static BOOL steam_protocol_handler(int argc, char *argv[])
+/* Forward stub steam.exe commands to the native steam client */
+static BOOL steam_command_handler(int argc, char *argv[])
 {
-    const char *steam_prefix = "steam://";
-    STARTUPINFOA si = { sizeof(si) };
-    PROCESS_INFORMATION pi;
-    char cmd[1024];
-    int size;
-    int i;
+    typedef NTSTATUS (WINAPI *__WINE_UNIX_SPAWNVP)(char *const argv[], int wait);
+    static __WINE_UNIX_SPAWNVP p__wine_unix_spawnvp;
+    NTSTATUS status = STATUS_UNSUCCESSFUL;
+    char **unix_argv;
+    HMODULE module;
+    int i, j;
+    static char *unix_steam[] =
+    {
+        (char *)"steam-runtime-steam-remote",
+        (char *)"steam",
+        NULL,
+    };
+
+    /* If there are command line options, only forward steam:// and options start with - */
+    if (argc > 1 && StrStrIA(argv[1], "steam://") != argv[1] && argv[1][0] != '-')
+        return FALSE;
+
+    if (!p__wine_unix_spawnvp)
+    {
+        module = GetModuleHandleA("ntdll.dll");
+        p__wine_unix_spawnvp = (__WINE_UNIX_SPAWNVP)GetProcAddress(module, "__wine_unix_spawnvp");
+        if (!p__wine_unix_spawnvp)
+        {
+            WINE_ERR("Failed to load __wine_unix_spawnvp().\n");
+            return FALSE;
+        }
+    }
+
+    if (!(unix_argv = static_cast<char **>(malloc((argc + 1) * sizeof(*unix_argv)))))
+    {
+        WINE_ERR("Out of memory.\n");
+        return FALSE;
+    }
 
     for (i = 1; i < argc; ++i)
-        if (!strcmp(argv[i], "--"))
+        unix_argv[i] = argv[i];
+    unix_argv[argc] = NULL;
+
+    for (i = 0; i < ARRAY_SIZE(unix_steam); ++i)
+    {
+        unix_argv[0] = unix_steam[i];
+
+        WINE_TRACE("Trying");
+        for (j = 0; j < argc; ++j)
+            WINE_TRACE(" %s", wine_dbgstr_a(unix_argv[j]));
+        WINE_TRACE("\n");
+
+        status = p__wine_unix_spawnvp(unix_argv, TRUE);
+        if (status == STATUS_SUCCESS)
             break;
-
-    if (i >= argc - 1)
-        return FALSE;
-    ++i;
-
-    if (strlen(argv[i]) < ARRAY_SIZE(steam_prefix))
-        return FALSE;
-
-    if (strncasecmp(argv[i], steam_prefix, ARRAY_SIZE(steam_prefix) - 1))
-        return FALSE;
-
-    size = snprintf(cmd, sizeof(cmd), "winebrowser \"%s\"", argv[i]);
-    if (size >= sizeof(cmd))
-    {
-        WINE_ERR("Argument is too large, argv[%d] %s.\n", i, wine_dbgstr_a(argv[i]));
-        return TRUE;
     }
+    free(unix_argv);
 
-    WINE_TRACE("Executing %s.\n", wine_dbgstr_a(cmd));
-    if (!CreateProcessA(NULL, cmd, NULL, NULL, FALSE, CREATE_UNICODE_ENVIRONMENT, NULL, NULL, &si, &pi))
+    if (status == STATUS_SUCCESS)
     {
-        WINE_ERR("Failed to create process %s, error %u.\n", wine_dbgstr_a(cmd), GetLastError());
-        return TRUE;
+        WINE_TRACE("Forwarded command to native steam.\n");
     }
-    FreeConsole();
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hThread);
-    CloseHandle(pi.hProcess);
+    else
+    {
+        WINE_ERR("Forwarding");
+        for (i = 0; i < argc; ++i)
+            WINE_ERR(" %s", wine_dbgstr_a(argv[i]));
+        WINE_ERR(" to native steam failed, status %#lx.\n", status);
+    }
     return TRUE;
 }
 
@@ -1203,7 +1329,7 @@ static void setup_steam_files(void)
     const char *steam_install_path = getenv("STEAM_COMPAT_CLIENT_INSTALL_PATH");
     const char *steam_library_paths = getenv("STEAM_COMPAT_LIBRARY_PATHS");
     const char *start, *end, *next;
-    unsigned int i, index = 1;
+    unsigned int i, index = 0;
     std::string contents;
     char idx_str[10];
 
@@ -1241,7 +1367,7 @@ static void setup_steam_files(void)
                 }
             }
 
-            contents += std::string("\t\"") + idx_str + "\" \t\"" + s + "\"\n";
+            contents += std::string("\t\"") + idx_str + "\"\n\t{\n\t\t\"path\"\t\t\"" + s + "\"\n\t}\n";
         }
         else
         {
@@ -1283,7 +1409,7 @@ static void setup_steam_files(void)
                 }
             }
 
-            contents += std::string("\t\"") + idx_str + "\" \t\"" + s + "\"\n";
+            contents += std::string("\t\"") + idx_str + "\"\n\t{\n\t\t\"path\"\t\t\"" + s + "\"\n\t}\n";
         }
         else
         {
@@ -1388,6 +1514,29 @@ static DWORD WINAPI steam_drm_thread(void *arg)
 
     return 0;
 }
+
+BOOL is_ptraced(void)
+{
+    char key[50];
+    int value;
+    FILE *fp = fopen("/proc/self/status", "r");
+    BOOL ret = FALSE;
+
+    if (!fp) return FALSE;
+
+    while (fscanf(fp, " %s	%d\n", key, &value) > 0)
+    {
+        if (!strcmp("TracerPid:", key))
+        {
+            ret = (value != 0);
+            break;
+        }
+    }
+
+    fclose(fp);
+    return ret;
+}
+
 int main(int argc, char *argv[])
 {
     HANDLE wait_handle = INVALID_HANDLE_VALUE;
@@ -1399,7 +1548,7 @@ int main(int argc, char *argv[])
 
     WINE_TRACE("\n");
 
-    if (steam_protocol_handler(argc, argv))
+    if (steam_command_handler(argc, argv))
         return 0;
 
     if (getenv("SteamGameId"))
@@ -1431,7 +1580,7 @@ int main(int argc, char *argv[])
         {
             unsigned int sleep_count = 0;
             WINE_TRACE("PROTON_WAIT_ATTACH is set, waiting for debugger...\n");
-            while (!IsDebuggerPresent())
+            while (!IsDebuggerPresent() && !is_ptraced())
             {
                 Sleep(100);
                 ++sleep_count;
@@ -1472,7 +1621,7 @@ int main(int argc, char *argv[])
     }
 
     if (game_process)
-        NtSetInformationProcess( GetCurrentProcess(), (PROCESS_INFORMATION_CLASS)1000 /* ProcessWineMakeProcessSystem */,
+        NtSetInformationProcess( GetCurrentProcess(), (PROCESSINFOCLASS)1000 /* ProcessWineMakeProcessSystem */,
                                  &wait_handle, sizeof(HANDLE *) );
 
     if(wait_handle != INVALID_HANDLE_VALUE)

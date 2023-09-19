@@ -16,7 +16,6 @@ import subprocess
 import sys
 import tarfile
 import shlex
-import time
 
 from ctypes import CDLL
 from ctypes import CFUNCTYPE
@@ -41,7 +40,7 @@ from random import randrange
 #To enable debug logging, copy "user_settings.sample.py" to "user_settings.py"
 #and edit it if needed.
 
-CURRENT_PREFIX_VERSION="GE-Proton7-43"
+CURRENT_PREFIX_VERSION="GE-Proton8-15"
 
 PFX="Proton: "
 ld_path_var = "LD_LIBRARY_PATH"
@@ -476,7 +475,6 @@ class CompatData:
     def __init__(self, compatdata):
         self.base_dir = compatdata + "/"
         self.prefix_dir = self.path("pfx/")
-        self.creation_sync_guard = self.path("pfx/creation_sync_guard")
         self.version_file = self.path("version")
         self.config_info_file = self.path("config_info")
         self.tracked_files_file = self.path("tracked_files")
@@ -626,15 +624,10 @@ class CompatData:
                     log("Unable to write new registry file to " + sysreg_fp)
                     pass
 
-            if int(old_proton_maj) < 7 or (int(old_proton_maj) == 7 and
-                                           int(old_proton_min) == 0 and
-                                           int(old_prefix_ver) < 101):
-                with open(self.creation_sync_guard, "w"):
-                    pass
-                os.sync()
-
             stale_builtins = [self.prefix_dir + "/drive_c/windows/system32/amd_ags_x64.dll",
-                              self.prefix_dir + "/drive_c/windows/syswow64/amd_ags_x64.dll" ]
+                              self.prefix_dir + "/drive_c/windows/syswow64/amd_ags_x64.dll",
+                              self.prefix_dir + "/drive_c/windows/system32/ir50_32.dll",
+                              self.prefix_dir + "/drive_c/windows/syswow64/ir50_32.dll" ]
             for builtin in stale_builtins:
                 if file_exists(builtin, follow_symlinks=False) and file_is_wine_builtin_dll(builtin):
                     log("Removing stale builtin " + builtin)
@@ -720,34 +713,31 @@ class CompatData:
                     if tracked_name not in prev_tracked_files:
                         tracked_files.write(tracked_name + "\n")
 
+    def create_symlink(self, lname, fname):
+        if file_exists(lname, follow_symlinks=False):
+            if os.path.islink(lname):
+                os.remove(lname)
+                os.symlink(fname, lname)
+        else:
+            os.symlink(fname, lname)
+
     def create_fonts_symlinks(self):
-        fontsmap = [
-            ( g_proton.fonts_dir, "LiberationSans-Regular.ttf", "arial.ttf" ),
-            ( g_proton.fonts_dir, "LiberationSans-Bold.ttf", "arialbd.ttf" ),
-            ( g_proton.fonts_dir, "LiberationSerif-Regular.ttf", "times.ttf" ),
-            ( g_proton.fonts_dir, "LiberationMono-Regular.ttf", "cour.ttf" ),
-            ( g_proton.fonts_dir, "LiberationMono-Bold.ttf", "courbd.ttf" ),
-            ( g_proton.fonts_dir, "msyh.ttf", "msyh.ttf" ),
-            ( g_proton.fonts_dir, "simsun.ttc", "simsun.ttc" ),
-            ( g_proton.fonts_dir, "msgothic.ttc", "msgothic.ttc" ),
-            ( g_proton.fonts_dir, "malgun.ttf", "malgun.ttf" ),
-            ( g_proton.fonts_dir, "micross.ttf", "micross.ttf" ),
-            ( g_proton.fonts_dir, "nirmala.ttf", "nirmala.ttf" ),
-
-            ( g_proton.wine_fonts_dir, "tahoma.ttf", "tahoma.ttf" ),
-        ]
-
+        ALTERNATIVES = {
+            ('1313860', 'arial.ttf'),    # FIFA 21
+            ('1506830', 'arial.ttf'),    # FIFA 22
+        }
         windowsfonts = self.prefix_dir + "/drive_c/windows/Fonts"
         makedirs(windowsfonts)
-        for p in fontsmap:
-            lname = os.path.join(windowsfonts, p[2])
-            fname = os.path.join(p[0], p[1])
-            if file_exists(lname, follow_symlinks=False):
-                if os.path.islink(lname):
-                    os.remove(lname)
-                    os.symlink(fname, lname)
-            else:
-                os.symlink(fname, lname)
+        sgi = os.environ.get('SteamGameId', '')
+        for fonts_dir in [g_proton.fonts_dir, g_proton.wine_fonts_dir]:
+            for font in os.listdir(fonts_dir):
+                if not font.endswith('.ttf') and not font.endswith('.ttc'):
+                    continue
+                lname = os.path.join(windowsfonts, font)
+                fname = os.path.join(fonts_dir, font)
+                if (sgi, font) in ALTERNATIVES:
+                    fname = os.path.join(fonts_dir, 'alt', font)
+                self.create_symlink(lname, fname)
 
     def migrate_user_paths(self):
         #move winxp-style paths to vista+ paths. we can't do this in
@@ -792,25 +782,15 @@ class CompatData:
 
             self.upgrade_pfx(old_ver)
 
-            # not fully-created prefix, copy it for future investigation
-            if file_exists(self.prefix_dir, follow_symlinks=True) and not file_exists(self.creation_sync_guard, follow_symlinks=True):
-                shutil.move(self.prefix_dir, self.path(f"corrupted_pfx-{time.time()}.bak"))
-
             if not file_exists(self.prefix_dir, follow_symlinks=True):
                 makedirs(self.prefix_dir + "/drive_c")
                 set_dir_casefold_bit(self.prefix_dir + "/drive_c")
 
+            if not file_exists(self.prefix_dir + "/user.reg", follow_symlinks=True):
                 self.copy_pfx()
-                os.sync()
-
-                with open(self.creation_sync_guard, "x"):
-                    pass
-                os.sync()
 
             self.migrate_user_paths()
-            
-            makedirs(self.prefix_dir + "/dosdevices/")
-            
+
             if not file_exists(self.prefix_dir + "/dosdevices/c:", follow_symlinks=False):
                 os.symlink("../drive_c", self.prefix_dir + "/dosdevices/c:")
 
@@ -830,6 +810,7 @@ class CompatData:
                     "d3dcompiler_*.dll," +
                     "d3dcsx*.dll," +
                     "d3dx*.dll," +
+                    "dx8vb.dll," +
                     "x3daudio*.dll," +
                     "xactengine*.dll," +
                     "xapofx*.dll," +
@@ -1096,6 +1077,10 @@ class CompatData:
                         prefix=self.prefix_dir, track_file=tracked_files, link_debug=True)
 
                 #copy vkd3d files into place
+                try_copy(g_proton.lib64_dir + "vkd3d/libvkd3d-1.dll", "drive_c/windows/system32",
+                        prefix=self.prefix_dir, track_file=tracked_files, link_debug=True)
+                try_copy(g_proton.lib_dir + "vkd3d/libvkd3d-1.dll", "drive_c/windows/syswow64",
+                        prefix=self.prefix_dir, track_file=tracked_files, link_debug=True)
                 try_copy(g_proton.lib64_dir + "vkd3d/libvkd3d-shader-1.dll", "drive_c/windows/system32",
                         prefix=self.prefix_dir, track_file=tracked_files, link_debug=True)
                 try_copy(g_proton.lib_dir + "vkd3d/libvkd3d-shader-1.dll", "drive_c/windows/syswow64",
@@ -1107,7 +1092,7 @@ class CompatData:
                     wined3dfiles = ["d3d12", "d3d11", "d3d10", "d3d10core", "d3d10_1", "d3d9"]
                 else:
                     dxvkfiles = ["d3d11", "d3d10core", "d3d9"]
-                    vkd3d_protonfiles = ["d3d12"]
+                    vkd3d_protonfiles = ["d3d12", "d3d12core"]
                     wined3dfiles = []
 
                 if use_dxvk_dxgi:
@@ -1185,11 +1170,12 @@ def default_compat_config():
                 #affected by CW bug 19126
                 "536280", #Disintegration
                 "707030", #POSTAL 4: No Regerts
-                "794260", #Outward: Definitive Edition
-                "1328350", #Turbo Overkill
                 "1331440", #FUSER
                 "1359980", #POSTAL: Brain Damaged
                 "1766430", #POSTAL Brain Damaged Demo
+                "692890", #Roboquest
+                "794260", #Outward: Definitive Edition
+                "1328350", #Turbo Overkill
                 "2001540", #Slayers X Demo
 
                 #affected by CW bug 19741
@@ -1239,33 +1225,58 @@ def default_compat_config():
                 ]:
             ret.add("noopwr")
 
-        if appid in [
-                "1621680",
-                ]:
+        if appid == "1621680":
             ret.add("noforcelgadd")
 
         if appid in [
-                "1341820",
-                "306130"
+                "1341820", #As Dusk falls
+                "280790", #Creativerse
+                "306130", #The Elder Scrolls Online
+                "24010", #Train Simulator
+                "374320", #DARK SOULS III
+                "65500", #Aura: Fate of the Ages
+                "4000", #Garry's Mod
+                "383120", #Empyrion - Galactic Survival
+                "2371630", #Sword Art Online: Integral Factor
                 ]:
             ret.add("gamedrive")
 
         if appid in [
                 "202990", #Call of Duty: Black Ops II - Multiplayer
                 "212910", #Call of Duty: Black Ops II - Zombies
+                "499100", #Dark Parables: The Exiled Prince Collector's Edition (499100)
                 ]:
             ret.add("heapdelayfree")
 
         if appid in [
+                "2630", #Call of Duty 2
+                ]:
+            ret.add("nofsync")
+            ret.add("noesync")
+
+        if appid in [
+                "1237970", #Titanfall 2
+                ]:
+            for idx, arg in enumerate(sys.argv):
+                if '-northstar' in arg:
+                    ret.add("northstar")
+
+        if appid in [
                 # enable dxvknvapi for titles verified to benefit (e.g. working DLSS)
+                "1938800", #Alone in the Dark Prologue
+                "1310410", #Alone in the Dark
                 "673130", #amid evil
                 "1182900", #A Plague Tale: Requiem
                 "1291680", #apocalypse: 2.0 edition
                 "979690", #the ascent
                 "805550", #assetto corsa competizione
+                "668580", #Atomic Heart
+                "2407990", #Atomic Heart demo
                 "924970", #back 4 blood
+                "1086940", #Baldur's Gate 3
                 "1178830", #bright memory infinite
                 "1409670", #bright memory infinite benchmark
+                "1016800", #chernobylite enhanced edition
                 "1153640", #chorus
                 "1791040", #chorus demo
                 "1577240", #cions of vega
@@ -1273,11 +1284,18 @@ def default_compat_config():
                 "870780", #control ultimate edition
                 "884660", #CRSED
                 "1091500", #cyberpunk 2077
+                "1693980", #dead space (remake)
                 "1190460", #death stranding
                 "1850570", #Death Stranding Director's Cut
                 "1252330", #deathloop
                 "548430", #deep rock galactic
                 "428660", #deliver us the moon
+                "1929610", #Demonologist
+                "2302560", #Demonologist demo
+                "2097490", #Desordre
+                "2373430", #Desordre (demo)
+                "2211940", #Doge Simulator
+                "2312000", #Doge Simulator (demo)
                 "534380", #dying light 2
                 "269190", #edge of eternity
                 "1871990", #engine evolution 2022
@@ -1288,6 +1306,9 @@ def default_compat_config():
                 "1332390", #F.I.S.T.: Forged In Shadow Torch Demo
                 "1641960", #Forever Skies
                 "2141060", #Forever Skies Demo
+                "1680880", #forspoken
+                "2228080", #forspoken demo
+                "1551360", #Forza Horizon 5
                 "1080110", #f1 2020
                 "1098130", #get stuffed
                 "1139900", #ghostrunner
@@ -1296,49 +1317,93 @@ def default_compat_config():
                 "1593500", #god of war
                 "1496790", #Gotham Knights
                 "414340", #hellblade: senua's sacrifice
+                "1817230", #hi-fi rush
                 "1659040", #hitman 3
                 "1847520", #hitman 3 free starter pack
                 "1151640", #Horizon Zero Dawn
+                "1149460", #Icarus
                 "1650150", #island of the ancients
                 "1987940", #island of the ancients demo
                 "1371480", #iron conflict
+                "1946700", #Layers of Fear
+                "2237040", #Layers of Fear (demo)
                 "1544360", #lego builder's journey
+                "1265780", #Lord of the Rings: Gollum
                 "1363080", #Manor Lords
                 "2122820", #Manor Lords Demo
+                "997070", #marvel's avengers
                 "1817070", #marvel's spider-man remastered
                 "784080", #mechwarrior 5: mercenaries
                 "1170950", #mortal online 2
                 "261550", #mount & blade II: bannerlord
                 "1222370", #Necromunda: Hired Gun
+                "1846380", #need for speed unbound
+                "1325200", #nioh 2
                 "275850", #no man's sky
                 "1386900", #Observer: System Redux
                 "1140100", #the persistence
                 "1322170", #pluviophile
                 "400", #Portal [RTX]
+                "2410180", #Portal Prelude RTX
+                "1549180", #propnight
                 "1186640", #pumpkin jack
+                "1895880", #Ratchet & Clank: Rift Apart
                 "1144200", #Ready Or Not
                 "1404210", #Red Dead Online
                 "1174180", #Red Dead Redemption 2
+                "1294810", #Redfall
+                "1282100", #Remnant 2
+                "1649240", #returnal
                 "391220", #rise of the tomb raider
+                "1599660", #sackboy: a big adventure
+                "872670", #SCP: 5K - alpha testing
+                "513710", #scum
+                "1227690", #Severed Steel
+                "1631910", #Severed Steel demo
                 "750920", #shadow of the tomb raider
+                "1949030", #Sherlock Holmes: The Awakened
+                "1155330", #Showgunners
+                "2022460", #Showgunners demo
                 "1602080", #soulstice
                 "2015300", #soulstice demo
+                "1817190", #Spider-Man: Miles Morales
                 "1296010", #stay in the light
+                "2162020", #Strayed Lights
+                "2311720", #Strayed Lights demo
                 "813630", #supraland
                 "487390", #system shock demo
                 "868270", #the cycle: frontier
                 "306130", #the elder scrolls online
+                "1888930", #the last of us part 1
                 "1096200", #the orville: interactive fan experience
                 "1843860", #the redress of mira
                 "2050550", #the redress of mira demo
                 "1567740", #to hell with it
+                "1164940", #Trepang2
+                "1210600", #Trepang2 (demo)
                 "1662690", #twin stones: the journey of bukka
                 "1659420", #Uncharted Legacy of Thieves
+                "1159690", #Voidtrain
+                "1321660", #Voidtrain demo
+                "1361210", #Warhammer 40,000: Darktide
                 "236390", #war thunder
+                "2239550", #watch dogs legion
                 "936720", #wrench
                 "1249800", #xuan-yuan sword VII
+                "1358700", #STRANGER OF PARADISE FINAL FANTASY ORIGIN
+                "1446780", #monster hunter rise
+                "2379390", #Rainbow Six Extraction
                 ]:
             ret.add("enablenvapi")
+
+        if appid in [
+                "1245620", #Elden Ring
+                "1888160", #Armored Core VI
+                "814380", #Sekiro: Shadows Die Twice
+                "2379390", #Rainbow Six Extraction
+                ]:
+            ret.add("enableamdags")
+
     return ret
 
 class Session:
@@ -1352,6 +1417,10 @@ class Session:
                 "beclient.dll": "b,n",
                 "beclient_x64.dll": "b,n",
         }
+
+        # CW Bug 21737. Locoland executable happens to be steam.exe.
+        if os.environ.get("SteamGameId", 0) == "352130":
+            del self.dlloverrides["steam.exe"]
 
         self.compat_config = default_compat_config()
         self.cmdlineappend = []
@@ -1469,11 +1538,10 @@ class Session:
                 log("************************************************")
 
         if "PROTON_LOG" in self.env and nonzero(self.env["PROTON_LOG"]):
-            self.env.setdefault("WINEDEBUG", "+timestamp,+pid,+tid,+seh,+unwind,+debugstr,+loaddll,+mscoree")
+            self.env.setdefault("WINEDEBUG", "+timestamp,+pid,+tid,+seh,+unwind,+threadname,+debugstr,+loaddll,+mscoree")
             self.env.setdefault("DXVK_LOG_LEVEL", "info")
             self.env.setdefault("VKD3D_DEBUG", "warn")
             self.env.setdefault("VKD3D_SHADER_DEBUG", "fixme")
-            self.env.setdefault("VKD3D_FEATURE_LEVEL", "12_0")
             self.env.setdefault("WINE_MONO_TRACE", "E:System.NotImplementedException")
 
             if self.env["PROTON_LOG"] != "1":
@@ -1483,7 +1551,6 @@ class Session:
         self.env.setdefault("WINEDEBUG", "-all")
         self.env.setdefault("DXVK_LOG_LEVEL", "none")
         self.env.setdefault("VKD3D_DEBUG", "none")
-        self.env.setdefault("VKD3D_FEATURE_LEVEL", "12_0")
         self.env.setdefault("VKD3D_SHADER_DEBUG", "none")
 
         #disable XIM support until libx11 >= 1.7 is widespread
@@ -1510,6 +1577,7 @@ class Session:
         self.check_environment("PROTON_NO_XIM", "noxim")
         self.check_environment("PROTON_HEAP_DELAY_FREE", "heapdelayfree")
         self.check_environment("PROTON_ENABLE_NVAPI", "enablenvapi")
+        self.check_environment("PROTON_ENABLE_AMD_AGS", "enableamdags")
 
         if "noesync" in self.compat_config:
             self.env.pop("WINEESYNC", "")
@@ -1542,6 +1610,9 @@ class Session:
         if "vkd3dbindlesstb" in self.compat_config:
             append_to_env_str(self.env, "VKD3D_CONFIG", "force_bindless_texel_buffer", ",")
 
+        if "northstar" in self.compat_config:
+            append_to_env_str(self.env, "WINEDLLOVERRIDES", "wsock32=n,b", ";")
+
         if "vkd3dfl12" in self.compat_config:
             if not "VKD3D_FEATURE_LEVEL" in self.env:
                 self.env["VKD3D_FEATURE_LEVEL"] = "12_0"
@@ -1565,7 +1636,7 @@ class Session:
         if "PROTON_CRASH_REPORT_DIR" in self.env:
             self.env["WINE_CRASH_REPORT_DIR"] = self.env["PROTON_CRASH_REPORT_DIR"]
 
-        if self.env["WINEDEBUG"] != "-all":
+        if "PROTON_LOG" in self.env and nonzero(self.env["PROTON_LOG"]):
             if self.setup_logging(append_forever=False):
                 self.log_file.write("======================\n")
                 with open(g_proton.version_file, "r") as f:
@@ -1584,6 +1655,9 @@ class Session:
                     kernel_version = "unknown"
 
                 self.log_file.write(f"Kernel: {kernel_version}\n")
+                self.log_file.write("Language: LC_ALL " + str(self.env.get("HOST_LC_ALL", None)) +
+                                    ", LC_MESSAGES " + str(self.env.get("LC_MESSAGES", None)) +
+                                    ", LC_CTYPE " + str(self.env.get("LC_CTYPE", None)) + "\n")
 
                 #dump some important variables into the log header
                 for var in ["WINEDLLOVERRIDES", "WINEDEBUG"]:
@@ -1591,6 +1665,8 @@ class Session:
                         self.log_file.write("System " + var + ": " + os.environ[var] + "\n")
                     if var in used_user_settings:
                         self.log_file.write("User settings " + var + ": " + used_user_settings[var] + "\n")
+                    if var in self.env:
+                        self.log_file.write("Effective " + var + ": " + self.env[var] + "\n")
 
                 self.log_file.write("======================\n")
                 self.log_file.flush()
@@ -1632,6 +1708,9 @@ class Session:
 
         if "enablenvapi" in self.compat_config:
             self.env["DXVK_ENABLE_NVAPI"] = "1"
+
+        if "enableamdags" in self.compat_config:
+            self.dlloverrides["amd_ags_x64"] = "b"
 
         s = ""
         for dll in self.dlloverrides:
@@ -1856,4 +1935,3 @@ if __name__ == "__main__":
 
 #pylint --disable=C0301,C0326,C0330,C0111,C0103,R0902,C1801,R0914,R0912,R0915
 # vim: set syntax=python:
-

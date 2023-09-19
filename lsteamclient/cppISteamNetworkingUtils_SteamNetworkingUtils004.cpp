@@ -1,15 +1,16 @@
 #include "steam_defs.h"
 #pragma push_macro("__cdecl")
 #undef __cdecl
-#include "steamworks_sdk_153a/steam_api.h"
-#include "steamworks_sdk_153a/steamnetworkingtypes.h"
-#include "steamworks_sdk_153a/isteamnetworkingutils.h"
+#define __cdecl
+#include "steamworks_sdk_157/steam_api.h"
+#include "steamworks_sdk_157/steamnetworkingtypes.h"
+#include "steamworks_sdk_157/isteamnetworkingutils.h"
 #pragma pop_macro("__cdecl")
 #include "steamclient_private.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define SDKVER_153a
+#define SDKVER_157
 #include "struct_converters.h"
 #include "cppISteamNetworkingUtils_SteamNetworkingUtils004.h"
 ESteamNetworkingAvailability cppISteamNetworkingUtils_SteamNetworkingUtils004_GetRelayNetworkStatus(void *linux_side, SteamRelayNetworkStatus_t * pDetails)

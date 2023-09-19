@@ -1,19 +1,20 @@
 #include "steam_defs.h"
 #pragma push_macro("__cdecl")
 #undef __cdecl
-#include "steamworks_sdk_153a/steam_api.h"
-#include "steamworks_sdk_153a/steamnetworkingtypes.h"
+#define __cdecl
+#include "steamworks_sdk_157/steam_api.h"
+#include "steamworks_sdk_157/steamnetworkingtypes.h"
 #pragma pop_macro("__cdecl")
 #include "steamclient_private.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
-#define SDKVER_153a
+#define SDKVER_157
 #include "struct_converters.h"
 #include "cppISteamClient_SteamClient020.h"
 HSteamPipe cppISteamClient_SteamClient020_CreateSteamPipe(void *linux_side)
 {
-    return ((ISteamClient*)linux_side)->CreateSteamPipe();
+    return after_steam_pipe_create(((ISteamClient*)linux_side)->CreateSteamPipe());
 }
 
 bool cppISteamClient_SteamClient020_BReleaseSteamPipe(void *linux_side, HSteamPipe hSteamPipe)
@@ -129,7 +130,7 @@ void cppISteamClient_SteamClient020_SetWarningMessageHook(void *linux_side, Stea
 
 bool cppISteamClient_SteamClient020_BShutdownIfAllPipesClosed(void *linux_side)
 {
-    return ((ISteamClient*)linux_side)->BShutdownIfAllPipesClosed();
+    return after_shutdown(((ISteamClient*)linux_side)->BShutdownIfAllPipesClosed());
 }
 
 void *cppISteamClient_SteamClient020_GetISteamHTTP(void *linux_side, HSteamUser hSteamuser, HSteamPipe hSteamPipe, const char * pchVersion)
