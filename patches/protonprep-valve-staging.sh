@@ -400,6 +400,10 @@
     echo "WINE: -FSR- fullscreen hack fsr patch"
     patch -Np1 < ../patches/proton/47-proton-fshack-AMD-FSR-complete.patch
 
+    echo "WINE: -HOTFIX- Fix NosTale mouse bug (very big thanks to Morsisko, NosApki team and Linux community)"
+    # NosTale patch
+    patch -Np1 < ../patches/wine-hotfixes/upstream/nostale.patch
+
     #echo "WINE: -FSR- fullscreen hack fsr patch"
     #patch -Np1 < ../patches/proton/48-proton-fshack_amd_fsr.patch
 
