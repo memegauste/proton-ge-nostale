@@ -1,188 +1,270 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_149/steam_api.h"
-#include "steamworks_sdk_149/steamnetworkingtypes.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_149
-#include "struct_converters.h"
-#include "cppISteamUtils_SteamUtils009.h"
-uint32 cppISteamUtils_SteamUtils009_GetSecondsSinceAppActive(void *linux_side)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamUtils_SteamUtils009_GetSecondsSinceAppActive( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetSecondsSinceAppActive();
+    struct ISteamUtils_SteamUtils009_GetSecondsSinceAppActive_params *params = (struct ISteamUtils_SteamUtils009_GetSecondsSinceAppActive_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetSecondsSinceAppActive(  );
+    return 0;
 }
 
-uint32 cppISteamUtils_SteamUtils009_GetSecondsSinceComputerActive(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetSecondsSinceComputerActive( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetSecondsSinceComputerActive();
+    struct ISteamUtils_SteamUtils009_GetSecondsSinceComputerActive_params *params = (struct ISteamUtils_SteamUtils009_GetSecondsSinceComputerActive_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetSecondsSinceComputerActive(  );
+    return 0;
 }
 
-EUniverse cppISteamUtils_SteamUtils009_GetConnectedUniverse(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetConnectedUniverse( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetConnectedUniverse();
+    struct ISteamUtils_SteamUtils009_GetConnectedUniverse_params *params = (struct ISteamUtils_SteamUtils009_GetConnectedUniverse_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetConnectedUniverse(  );
+    return 0;
 }
 
-uint32 cppISteamUtils_SteamUtils009_GetServerRealTime(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetServerRealTime( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetServerRealTime();
+    struct ISteamUtils_SteamUtils009_GetServerRealTime_params *params = (struct ISteamUtils_SteamUtils009_GetServerRealTime_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetServerRealTime(  );
+    return 0;
 }
 
-const char * cppISteamUtils_SteamUtils009_GetIPCountry(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetIPCountry( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetIPCountry();
+    struct ISteamUtils_SteamUtils009_GetIPCountry_params *params = (struct ISteamUtils_SteamUtils009_GetIPCountry_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetIPCountry(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_GetImageSize(void *linux_side, int iImage, uint32 * pnWidth, uint32 * pnHeight)
+NTSTATUS ISteamUtils_SteamUtils009_GetImageSize( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetImageSize((int)iImage, (uint32 *)pnWidth, (uint32 *)pnHeight);
+    struct ISteamUtils_SteamUtils009_GetImageSize_params *params = (struct ISteamUtils_SteamUtils009_GetImageSize_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetImageSize( params->iImage, params->pnWidth, params->pnHeight );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_GetImageRGBA(void *linux_side, int iImage, uint8 * pubDest, int nDestBufferSize)
+NTSTATUS ISteamUtils_SteamUtils009_GetImageRGBA( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetImageRGBA((int)iImage, (uint8 *)pubDest, (int)nDestBufferSize);
+    struct ISteamUtils_SteamUtils009_GetImageRGBA_params *params = (struct ISteamUtils_SteamUtils009_GetImageRGBA_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetImageRGBA( params->iImage, params->pubDest, params->nDestBufferSize );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_GetCSERIPPort(void *linux_side, uint32 * unIP, uint16 * usPort)
+NTSTATUS ISteamUtils_SteamUtils009_GetCSERIPPort( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetCSERIPPort((uint32 *)unIP, (uint16 *)usPort);
+    struct ISteamUtils_SteamUtils009_GetCSERIPPort_params *params = (struct ISteamUtils_SteamUtils009_GetCSERIPPort_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetCSERIPPort( params->unIP, params->usPort );
+    return 0;
 }
 
-uint8 cppISteamUtils_SteamUtils009_GetCurrentBatteryPower(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetCurrentBatteryPower( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetCurrentBatteryPower();
+    struct ISteamUtils_SteamUtils009_GetCurrentBatteryPower_params *params = (struct ISteamUtils_SteamUtils009_GetCurrentBatteryPower_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetCurrentBatteryPower(  );
+    return 0;
 }
 
-uint32 cppISteamUtils_SteamUtils009_GetAppID(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetAppID( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetAppID();
+    struct ISteamUtils_SteamUtils009_GetAppID_params *params = (struct ISteamUtils_SteamUtils009_GetAppID_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetAppID(  );
+    return 0;
 }
 
-void cppISteamUtils_SteamUtils009_SetOverlayNotificationPosition(void *linux_side, ENotificationPosition eNotificationPosition)
+NTSTATUS ISteamUtils_SteamUtils009_SetOverlayNotificationPosition( void *args )
 {
-    ((ISteamUtils*)linux_side)->SetOverlayNotificationPosition((ENotificationPosition)eNotificationPosition);
+    struct ISteamUtils_SteamUtils009_SetOverlayNotificationPosition_params *params = (struct ISteamUtils_SteamUtils009_SetOverlayNotificationPosition_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    iface->SetOverlayNotificationPosition( params->eNotificationPosition );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_IsAPICallCompleted(void *linux_side, SteamAPICall_t hSteamAPICall, bool * pbFailed)
+NTSTATUS ISteamUtils_SteamUtils009_IsAPICallCompleted( void *args )
 {
-    return ((ISteamUtils*)linux_side)->IsAPICallCompleted((SteamAPICall_t)hSteamAPICall, (bool *)pbFailed);
+    struct ISteamUtils_SteamUtils009_IsAPICallCompleted_params *params = (struct ISteamUtils_SteamUtils009_IsAPICallCompleted_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->IsAPICallCompleted( params->hSteamAPICall, params->pbFailed );
+    return 0;
 }
 
-ESteamAPICallFailure cppISteamUtils_SteamUtils009_GetAPICallFailureReason(void *linux_side, SteamAPICall_t hSteamAPICall)
+NTSTATUS ISteamUtils_SteamUtils009_GetAPICallFailureReason( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetAPICallFailureReason((SteamAPICall_t)hSteamAPICall);
+    struct ISteamUtils_SteamUtils009_GetAPICallFailureReason_params *params = (struct ISteamUtils_SteamUtils009_GetAPICallFailureReason_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetAPICallFailureReason( params->hSteamAPICall );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_GetAPICallResult(void *linux_side, SteamAPICall_t hSteamAPICall, void * pCallback, int cubCallback, int iCallbackExpected, bool * pbFailed)
+NTSTATUS ISteamUtils_SteamUtils009_RunFrame( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetAPICallResult((SteamAPICall_t)hSteamAPICall, (void *)pCallback, (int)cubCallback, (int)iCallbackExpected, (bool *)pbFailed);
+    struct ISteamUtils_SteamUtils009_RunFrame_params *params = (struct ISteamUtils_SteamUtils009_RunFrame_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    iface->RunFrame(  );
+    return 0;
 }
 
-void cppISteamUtils_SteamUtils009_RunFrame(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetIPCCallCount( void *args )
 {
-    ((ISteamUtils*)linux_side)->RunFrame();
+    struct ISteamUtils_SteamUtils009_GetIPCCallCount_params *params = (struct ISteamUtils_SteamUtils009_GetIPCCallCount_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetIPCCallCount(  );
+    return 0;
 }
 
-uint32 cppISteamUtils_SteamUtils009_GetIPCCallCount(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_SetWarningMessageHook( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetIPCCallCount();
+    struct ISteamUtils_SteamUtils009_SetWarningMessageHook_params *params = (struct ISteamUtils_SteamUtils009_SetWarningMessageHook_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    void (*U_CDECL u_pFunction)(int32_t, const char *) = manual_convert_SetWarningMessageHook_pFunction( params->pFunction );
+    iface->SetWarningMessageHook( u_pFunction );
+    return 0;
 }
 
-void cppISteamUtils_SteamUtils009_SetWarningMessageHook(void *linux_side, SteamAPIWarningMessageHook_t pFunction)
+NTSTATUS ISteamUtils_SteamUtils009_IsOverlayEnabled( void *args )
 {
-    pFunction = (SteamAPIWarningMessageHook_t)manual_convert_SteamAPIWarningMessageHook_t((void*)pFunction);
-    ((ISteamUtils*)linux_side)->SetWarningMessageHook((SteamAPIWarningMessageHook_t)pFunction);
+    struct ISteamUtils_SteamUtils009_IsOverlayEnabled_params *params = (struct ISteamUtils_SteamUtils009_IsOverlayEnabled_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->IsOverlayEnabled(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_IsOverlayEnabled(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_BOverlayNeedsPresent( void *args )
 {
-    return ((ISteamUtils*)linux_side)->IsOverlayEnabled();
+    struct ISteamUtils_SteamUtils009_BOverlayNeedsPresent_params *params = (struct ISteamUtils_SteamUtils009_BOverlayNeedsPresent_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->BOverlayNeedsPresent(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_BOverlayNeedsPresent(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_CheckFileSignature( void *args )
 {
-    return ((ISteamUtils*)linux_side)->BOverlayNeedsPresent();
+    struct ISteamUtils_SteamUtils009_CheckFileSignature_params *params = (struct ISteamUtils_SteamUtils009_CheckFileSignature_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    char *u_szFileName = steamclient_dos_to_unix_path( params->szFileName, 0 );
+    params->_ret = iface->CheckFileSignature( u_szFileName );
+    steamclient_free_path( u_szFileName );
+    return 0;
 }
 
-SteamAPICall_t cppISteamUtils_SteamUtils009_CheckFileSignature(void *linux_side, const char * szFileName)
+NTSTATUS ISteamUtils_SteamUtils009_ShowGamepadTextInput( void *args )
 {
-    return ((ISteamUtils*)linux_side)->CheckFileSignature((const char *)szFileName);
+    struct ISteamUtils_SteamUtils009_ShowGamepadTextInput_params *params = (struct ISteamUtils_SteamUtils009_ShowGamepadTextInput_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->ShowGamepadTextInput( params->eInputMode, params->eLineInputMode, params->pchDescription, params->unCharMax, params->pchExistingText );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_ShowGamepadTextInput(void *linux_side, EGamepadTextInputMode eInputMode, EGamepadTextInputLineMode eLineInputMode, const char * pchDescription, uint32 unCharMax, const char * pchExistingText)
+NTSTATUS ISteamUtils_SteamUtils009_GetEnteredGamepadTextLength( void *args )
 {
-    return ((ISteamUtils*)linux_side)->ShowGamepadTextInput((EGamepadTextInputMode)eInputMode, (EGamepadTextInputLineMode)eLineInputMode, (const char *)pchDescription, (uint32)unCharMax, (const char *)pchExistingText);
+    struct ISteamUtils_SteamUtils009_GetEnteredGamepadTextLength_params *params = (struct ISteamUtils_SteamUtils009_GetEnteredGamepadTextLength_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetEnteredGamepadTextLength(  );
+    return 0;
 }
 
-uint32 cppISteamUtils_SteamUtils009_GetEnteredGamepadTextLength(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_GetEnteredGamepadTextInput( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetEnteredGamepadTextLength();
+    struct ISteamUtils_SteamUtils009_GetEnteredGamepadTextInput_params *params = (struct ISteamUtils_SteamUtils009_GetEnteredGamepadTextInput_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetEnteredGamepadTextInput( params->pchText, params->cchText );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_GetEnteredGamepadTextInput(void *linux_side, char * pchText, uint32 cchText)
+NTSTATUS ISteamUtils_SteamUtils009_GetSteamUILanguage( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetEnteredGamepadTextInput((char *)pchText, (uint32)cchText);
+    struct ISteamUtils_SteamUtils009_GetSteamUILanguage_params *params = (struct ISteamUtils_SteamUtils009_GetSteamUILanguage_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetSteamUILanguage(  );
+    return 0;
 }
 
-const char * cppISteamUtils_SteamUtils009_GetSteamUILanguage(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_IsSteamRunningInVR( void *args )
 {
-    return ((ISteamUtils*)linux_side)->GetSteamUILanguage();
+    struct ISteamUtils_SteamUtils009_IsSteamRunningInVR_params *params = (struct ISteamUtils_SteamUtils009_IsSteamRunningInVR_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->IsSteamRunningInVR(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_IsSteamRunningInVR(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_SetOverlayNotificationInset( void *args )
 {
-    return ((ISteamUtils*)linux_side)->IsSteamRunningInVR();
+    struct ISteamUtils_SteamUtils009_SetOverlayNotificationInset_params *params = (struct ISteamUtils_SteamUtils009_SetOverlayNotificationInset_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    iface->SetOverlayNotificationInset( params->nHorizontalInset, params->nVerticalInset );
+    return 0;
 }
 
-void cppISteamUtils_SteamUtils009_SetOverlayNotificationInset(void *linux_side, int nHorizontalInset, int nVerticalInset)
+NTSTATUS ISteamUtils_SteamUtils009_IsSteamInBigPictureMode( void *args )
 {
-    ((ISteamUtils*)linux_side)->SetOverlayNotificationInset((int)nHorizontalInset, (int)nVerticalInset);
+    struct ISteamUtils_SteamUtils009_IsSteamInBigPictureMode_params *params = (struct ISteamUtils_SteamUtils009_IsSteamInBigPictureMode_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->IsSteamInBigPictureMode(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_IsSteamInBigPictureMode(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_StartVRDashboard( void *args )
 {
-    return ((ISteamUtils*)linux_side)->IsSteamInBigPictureMode();
+    struct ISteamUtils_SteamUtils009_StartVRDashboard_params *params = (struct ISteamUtils_SteamUtils009_StartVRDashboard_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    iface->StartVRDashboard(  );
+    return 0;
 }
 
-void cppISteamUtils_SteamUtils009_StartVRDashboard(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_IsVRHeadsetStreamingEnabled( void *args )
 {
-    ((ISteamUtils*)linux_side)->StartVRDashboard();
+    struct ISteamUtils_SteamUtils009_IsVRHeadsetStreamingEnabled_params *params = (struct ISteamUtils_SteamUtils009_IsVRHeadsetStreamingEnabled_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->IsVRHeadsetStreamingEnabled(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_IsVRHeadsetStreamingEnabled(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_SetVRHeadsetStreamingEnabled( void *args )
 {
-    return ((ISteamUtils*)linux_side)->IsVRHeadsetStreamingEnabled();
+    struct ISteamUtils_SteamUtils009_SetVRHeadsetStreamingEnabled_params *params = (struct ISteamUtils_SteamUtils009_SetVRHeadsetStreamingEnabled_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    iface->SetVRHeadsetStreamingEnabled( params->bEnabled );
+    return 0;
 }
 
-void cppISteamUtils_SteamUtils009_SetVRHeadsetStreamingEnabled(void *linux_side, bool bEnabled)
+NTSTATUS ISteamUtils_SteamUtils009_IsSteamChinaLauncher( void *args )
 {
-    ((ISteamUtils*)linux_side)->SetVRHeadsetStreamingEnabled((bool)bEnabled);
+    struct ISteamUtils_SteamUtils009_IsSteamChinaLauncher_params *params = (struct ISteamUtils_SteamUtils009_IsSteamChinaLauncher_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->IsSteamChinaLauncher(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_IsSteamChinaLauncher(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_InitFilterText( void *args )
 {
-    return ((ISteamUtils*)linux_side)->IsSteamChinaLauncher();
+    struct ISteamUtils_SteamUtils009_InitFilterText_params *params = (struct ISteamUtils_SteamUtils009_InitFilterText_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->InitFilterText(  );
+    return 0;
 }
 
-bool cppISteamUtils_SteamUtils009_InitFilterText(void *linux_side)
+NTSTATUS ISteamUtils_SteamUtils009_FilterText( void *args )
 {
-    return ((ISteamUtils*)linux_side)->InitFilterText();
+    struct ISteamUtils_SteamUtils009_FilterText_params *params = (struct ISteamUtils_SteamUtils009_FilterText_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->FilterText( params->pchOutFilteredText, params->nByteSizeOutFilteredText, params->pchInputMessage, params->bLegalOnly );
+    return 0;
 }
 
-int cppISteamUtils_SteamUtils009_FilterText(void *linux_side, char * pchOutFilteredText, uint32 nByteSizeOutFilteredText, const char * pchInputMessage, bool bLegalOnly)
+NTSTATUS ISteamUtils_SteamUtils009_GetIPv6ConnectivityState( void *args )
 {
-    return ((ISteamUtils*)linux_side)->FilterText((char *)pchOutFilteredText, (uint32)nByteSizeOutFilteredText, (const char *)pchInputMessage, (bool)bLegalOnly);
+    struct ISteamUtils_SteamUtils009_GetIPv6ConnectivityState_params *params = (struct ISteamUtils_SteamUtils009_GetIPv6ConnectivityState_params *)args;
+    struct u_ISteamUtils_SteamUtils009 *iface = (struct u_ISteamUtils_SteamUtils009 *)params->linux_side;
+    params->_ret = iface->GetIPv6ConnectivityState( params->eProtocol );
+    return 0;
 }
 
-ESteamIPv6ConnectivityState cppISteamUtils_SteamUtils009_GetIPv6ConnectivityState(void *linux_side, ESteamIPv6ConnectivityProtocol eProtocol)
-{
-    return ((ISteamUtils*)linux_side)->GetIPv6ConnectivityState((ESteamIPv6ConnectivityProtocol)eProtocol);
-}
-
-#ifdef __cplusplus
-}
-#endif

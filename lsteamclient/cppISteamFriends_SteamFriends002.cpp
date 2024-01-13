@@ -1,166 +1,243 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_099y/steam_api.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_099y
-#include "struct_converters.h"
-#include "cppISteamFriends_SteamFriends002.h"
-const char * cppISteamFriends_SteamFriends002_GetPersonaName(void *linux_side)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamFriends_SteamFriends002_GetPersonaName( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetPersonaName();
+    struct ISteamFriends_SteamFriends002_GetPersonaName_params *params = (struct ISteamFriends_SteamFriends002_GetPersonaName_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetPersonaName(  );
+    return 0;
 }
 
-void cppISteamFriends_SteamFriends002_SetPersonaName(void *linux_side, const char * pchPersonaName)
+NTSTATUS ISteamFriends_SteamFriends002_SetPersonaName( void *args )
 {
-    ((ISteamFriends*)linux_side)->SetPersonaName((const char *)pchPersonaName);
+    struct ISteamFriends_SteamFriends002_SetPersonaName_params *params = (struct ISteamFriends_SteamFriends002_SetPersonaName_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    iface->SetPersonaName( params->pchPersonaName );
+    return 0;
 }
 
-EPersonaState cppISteamFriends_SteamFriends002_GetPersonaState(void *linux_side)
+NTSTATUS ISteamFriends_SteamFriends002_GetPersonaState( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetPersonaState();
+    struct ISteamFriends_SteamFriends002_GetPersonaState_params *params = (struct ISteamFriends_SteamFriends002_GetPersonaState_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetPersonaState(  );
+    return 0;
 }
 
-void cppISteamFriends_SteamFriends002_SetPersonaState(void *linux_side, EPersonaState ePersonaState)
+NTSTATUS ISteamFriends_SteamFriends002_SetPersonaState( void *args )
 {
-    ((ISteamFriends*)linux_side)->SetPersonaState((EPersonaState)ePersonaState);
+    struct ISteamFriends_SteamFriends002_SetPersonaState_params *params = (struct ISteamFriends_SteamFriends002_SetPersonaState_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    iface->SetPersonaState( params->ePersonaState );
+    return 0;
 }
 
-int cppISteamFriends_SteamFriends002_GetFriendCount(void *linux_side, int iFriendFlags)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendCount( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendCount((int)iFriendFlags);
+    struct ISteamFriends_SteamFriends002_GetFriendCount_params *params = (struct ISteamFriends_SteamFriends002_GetFriendCount_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendCount( params->iFriendFlags );
+    return 0;
 }
 
-CSteamID cppISteamFriends_SteamFriends002_GetFriendByIndex(void *linux_side, int iFriend, int iFriendFlags)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendByIndex( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendByIndex((int)iFriend, (int)iFriendFlags);
+    struct ISteamFriends_SteamFriends002_GetFriendByIndex_params *params = (struct ISteamFriends_SteamFriends002_GetFriendByIndex_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    *params->_ret = iface->GetFriendByIndex( params->iFriend, params->iFriendFlags );
+    return 0;
 }
 
-EFriendRelationship cppISteamFriends_SteamFriends002_GetFriendRelationship(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendRelationship( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendRelationship((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_GetFriendRelationship_params *params = (struct ISteamFriends_SteamFriends002_GetFriendRelationship_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendRelationship( params->steamIDFriend );
+    return 0;
 }
 
-EPersonaState cppISteamFriends_SteamFriends002_GetFriendPersonaState(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendPersonaState( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendPersonaState((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_GetFriendPersonaState_params *params = (struct ISteamFriends_SteamFriends002_GetFriendPersonaState_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendPersonaState( params->steamIDFriend );
+    return 0;
 }
 
-const char * cppISteamFriends_SteamFriends002_GetFriendPersonaName(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendPersonaName( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendPersonaName((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_GetFriendPersonaName_params *params = (struct ISteamFriends_SteamFriends002_GetFriendPersonaName_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendPersonaName( params->steamIDFriend );
+    return 0;
 }
 
-void cppISteamFriends_SteamFriends002_SetFriendRegValue(void *linux_side, CSteamID steamIDFriend, const char * pchKey, const char * pchValue)
+NTSTATUS ISteamFriends_SteamFriends002_SetFriendRegValue( void *args )
 {
-    ((ISteamFriends*)linux_side)->SetFriendRegValue((CSteamID)steamIDFriend, (const char *)pchKey, (const char *)pchValue);
+    struct ISteamFriends_SteamFriends002_SetFriendRegValue_params *params = (struct ISteamFriends_SteamFriends002_SetFriendRegValue_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    iface->SetFriendRegValue( params->steamIDFriend, params->pchKey, params->pchValue );
+    return 0;
 }
 
-const char * cppISteamFriends_SteamFriends002_GetFriendRegValue(void *linux_side, CSteamID steamIDFriend, const char * pchKey)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendRegValue( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendRegValue((CSteamID)steamIDFriend, (const char *)pchKey);
+    struct ISteamFriends_SteamFriends002_GetFriendRegValue_params *params = (struct ISteamFriends_SteamFriends002_GetFriendRegValue_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendRegValue( params->steamIDFriend, params->pchKey );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_GetFriendGamePlayed(void *linux_side, CSteamID steamIDFriend, uint64 * pulGameID, uint32 * punGameIP, uint16 * pusGamePort, uint16 * pusQueryPort)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendGamePlayed( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendGamePlayed((CSteamID)steamIDFriend, (uint64 *)pulGameID, (uint32 *)punGameIP, (uint16 *)pusGamePort, (uint16 *)pusQueryPort);
+    struct ISteamFriends_SteamFriends002_GetFriendGamePlayed_params *params = (struct ISteamFriends_SteamFriends002_GetFriendGamePlayed_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendGamePlayed( params->steamIDFriend, params->pulGameID, params->punGameIP, params->pusGamePort, params->pusQueryPort );
+    return 0;
 }
 
-const char * cppISteamFriends_SteamFriends002_GetFriendPersonaNameHistory(void *linux_side, CSteamID steamIDFriend, int iPersonaName)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendPersonaNameHistory( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendPersonaNameHistory((CSteamID)steamIDFriend, (int)iPersonaName);
+    struct ISteamFriends_SteamFriends002_GetFriendPersonaNameHistory_params *params = (struct ISteamFriends_SteamFriends002_GetFriendPersonaNameHistory_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendPersonaNameHistory( params->steamIDFriend, params->iPersonaName );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_AddFriend(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_AddFriend( void *args )
 {
-    return ((ISteamFriends*)linux_side)->AddFriend((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_AddFriend_params *params = (struct ISteamFriends_SteamFriends002_AddFriend_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->AddFriend( params->steamIDFriend );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_RemoveFriend(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_RemoveFriend( void *args )
 {
-    return ((ISteamFriends*)linux_side)->RemoveFriend((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_RemoveFriend_params *params = (struct ISteamFriends_SteamFriends002_RemoveFriend_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->RemoveFriend( params->steamIDFriend );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_HasFriend(void *linux_side, CSteamID steamIDFriend, int iFriendFlags)
+NTSTATUS ISteamFriends_SteamFriends002_HasFriend( void *args )
 {
-    return ((ISteamFriends*)linux_side)->HasFriend((CSteamID)steamIDFriend, (int)iFriendFlags);
+    struct ISteamFriends_SteamFriends002_HasFriend_params *params = (struct ISteamFriends_SteamFriends002_HasFriend_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->HasFriend( params->steamIDFriend, params->iFriendFlags );
+    return 0;
 }
 
-int32 cppISteamFriends_SteamFriends002_AddFriendByName(void *linux_side, const char * pchEmailOrAccountName)
+NTSTATUS ISteamFriends_SteamFriends002_AddFriendByName( void *args )
 {
-    return ((ISteamFriends*)linux_side)->AddFriendByName((const char *)pchEmailOrAccountName);
+    struct ISteamFriends_SteamFriends002_AddFriendByName_params *params = (struct ISteamFriends_SteamFriends002_AddFriendByName_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->AddFriendByName( params->pchEmailOrAccountName );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_InviteFriendByEmail(void *linux_side, const char * pchEmailAccount)
+NTSTATUS ISteamFriends_SteamFriends002_InviteFriendByEmail( void *args )
 {
-    return ((ISteamFriends*)linux_side)->InviteFriendByEmail((const char *)pchEmailAccount);
+    struct ISteamFriends_SteamFriends002_InviteFriendByEmail_params *params = (struct ISteamFriends_SteamFriends002_InviteFriendByEmail_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->InviteFriendByEmail( params->pchEmailAccount );
+    return 0;
 }
 
-int cppISteamFriends_SteamFriends002_GetChatMessage(void *linux_side, CSteamID steamIDFriend, int iChatID, void * pvData, int cubData, EChatEntryType * peChatEntryType)
+NTSTATUS ISteamFriends_SteamFriends002_GetChatMessage( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetChatMessage((CSteamID)steamIDFriend, (int)iChatID, (void *)pvData, (int)cubData, (EChatEntryType *)peChatEntryType);
+    struct ISteamFriends_SteamFriends002_GetChatMessage_params *params = (struct ISteamFriends_SteamFriends002_GetChatMessage_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetChatMessage( params->steamIDFriend, params->iChatID, params->pvData, params->cubData, params->peChatEntryType );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_SendMsgToFriend(void *linux_side, CSteamID steamIDFriend, EChatEntryType eChatEntryType, const void * pvMsgBody, int cubMsgBody)
+NTSTATUS ISteamFriends_SteamFriends002_SendMsgToFriend( void *args )
 {
-    return ((ISteamFriends*)linux_side)->SendMsgToFriend((CSteamID)steamIDFriend, (EChatEntryType)eChatEntryType, (const void *)pvMsgBody, (int)cubMsgBody);
+    struct ISteamFriends_SteamFriends002_SendMsgToFriend_params *params = (struct ISteamFriends_SteamFriends002_SendMsgToFriend_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->SendMsgToFriend( params->steamIDFriend, params->eChatEntryType, params->pvMsgBody, params->cubMsgBody );
+    return 0;
 }
 
-int cppISteamFriends_SteamFriends002_GetChatIDOfChatHistoryStart(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_GetChatIDOfChatHistoryStart( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetChatIDOfChatHistoryStart((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_GetChatIDOfChatHistoryStart_params *params = (struct ISteamFriends_SteamFriends002_GetChatIDOfChatHistoryStart_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetChatIDOfChatHistoryStart( params->steamIDFriend );
+    return 0;
 }
 
-void cppISteamFriends_SteamFriends002_SetChatHistoryStart(void *linux_side, CSteamID steamIDFriend, int iChatID)
+NTSTATUS ISteamFriends_SteamFriends002_SetChatHistoryStart( void *args )
 {
-    ((ISteamFriends*)linux_side)->SetChatHistoryStart((CSteamID)steamIDFriend, (int)iChatID);
+    struct ISteamFriends_SteamFriends002_SetChatHistoryStart_params *params = (struct ISteamFriends_SteamFriends002_SetChatHistoryStart_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    iface->SetChatHistoryStart( params->steamIDFriend, params->iChatID );
+    return 0;
 }
 
-void cppISteamFriends_SteamFriends002_ClearChatHistory(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamFriends_SteamFriends002_ClearChatHistory( void *args )
 {
-    ((ISteamFriends*)linux_side)->ClearChatHistory((CSteamID)steamIDFriend);
+    struct ISteamFriends_SteamFriends002_ClearChatHistory_params *params = (struct ISteamFriends_SteamFriends002_ClearChatHistory_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    iface->ClearChatHistory( params->steamIDFriend );
+    return 0;
 }
 
-int cppISteamFriends_SteamFriends002_GetClanCount(void *linux_side)
+NTSTATUS ISteamFriends_SteamFriends002_GetClanCount( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetClanCount();
+    struct ISteamFriends_SteamFriends002_GetClanCount_params *params = (struct ISteamFriends_SteamFriends002_GetClanCount_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetClanCount(  );
+    return 0;
 }
 
-CSteamID cppISteamFriends_SteamFriends002_GetClanByIndex(void *linux_side, int iClan)
+NTSTATUS ISteamFriends_SteamFriends002_GetClanByIndex( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetClanByIndex((int)iClan);
+    struct ISteamFriends_SteamFriends002_GetClanByIndex_params *params = (struct ISteamFriends_SteamFriends002_GetClanByIndex_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    *params->_ret = iface->GetClanByIndex( params->iClan );
+    return 0;
 }
 
-const char * cppISteamFriends_SteamFriends002_GetClanName(void *linux_side, CSteamID steamIDClan)
+NTSTATUS ISteamFriends_SteamFriends002_GetClanName( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetClanName((CSteamID)steamIDClan);
+    struct ISteamFriends_SteamFriends002_GetClanName_params *params = (struct ISteamFriends_SteamFriends002_GetClanName_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetClanName( params->steamIDClan );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_InviteFriendToClan(void *linux_side, CSteamID steamIDFriend, CSteamID steamIDClan)
+NTSTATUS ISteamFriends_SteamFriends002_InviteFriendToClan( void *args )
 {
-    return ((ISteamFriends*)linux_side)->InviteFriendToClan((CSteamID)steamIDFriend, (CSteamID)steamIDClan);
+    struct ISteamFriends_SteamFriends002_InviteFriendToClan_params *params = (struct ISteamFriends_SteamFriends002_InviteFriendToClan_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->InviteFriendToClan( params->steamIDFriend, params->steamIDClan );
+    return 0;
 }
 
-bool cppISteamFriends_SteamFriends002_AcknowledgeInviteToClan(void *linux_side, CSteamID steamIDClan, bool bAcceptOrDenyClanInvite)
+NTSTATUS ISteamFriends_SteamFriends002_AcknowledgeInviteToClan( void *args )
 {
-    return ((ISteamFriends*)linux_side)->AcknowledgeInviteToClan((CSteamID)steamIDClan, (bool)bAcceptOrDenyClanInvite);
+    struct ISteamFriends_SteamFriends002_AcknowledgeInviteToClan_params *params = (struct ISteamFriends_SteamFriends002_AcknowledgeInviteToClan_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->AcknowledgeInviteToClan( params->steamIDClan, params->bAcceptOrDenyClanInvite );
+    return 0;
 }
 
-int cppISteamFriends_SteamFriends002_GetFriendCountFromSource(void *linux_side, CSteamID steamIDSource)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendCountFromSource( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendCountFromSource((CSteamID)steamIDSource);
+    struct ISteamFriends_SteamFriends002_GetFriendCountFromSource_params *params = (struct ISteamFriends_SteamFriends002_GetFriendCountFromSource_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    params->_ret = iface->GetFriendCountFromSource( params->steamIDSource );
+    return 0;
 }
 
-CSteamID cppISteamFriends_SteamFriends002_GetFriendFromSourceByIndex(void *linux_side, CSteamID steamIDSource, int iFriend)
+NTSTATUS ISteamFriends_SteamFriends002_GetFriendFromSourceByIndex( void *args )
 {
-    return ((ISteamFriends*)linux_side)->GetFriendFromSourceByIndex((CSteamID)steamIDSource, (int)iFriend);
+    struct ISteamFriends_SteamFriends002_GetFriendFromSourceByIndex_params *params = (struct ISteamFriends_SteamFriends002_GetFriendFromSourceByIndex_params *)args;
+    struct u_ISteamFriends_SteamFriends002 *iface = (struct u_ISteamFriends_SteamFriends002 *)params->linux_side;
+    *params->_ret = iface->GetFriendFromSourceByIndex( params->steamIDSource, params->iFriend );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

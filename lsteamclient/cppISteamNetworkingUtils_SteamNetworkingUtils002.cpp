@@ -1,124 +1,172 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_146/steam_api.h"
-#include "steamworks_sdk_146/steamnetworkingtypes.h"
-#include "steamworks_sdk_146/isteamnetworkingutils.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_146
-#include "struct_converters.h"
-#include "cppISteamNetworkingUtils_SteamNetworkingUtils002.h"
-ESteamNetworkingAvailability cppISteamNetworkingUtils_SteamNetworkingUtils002_GetRelayNetworkStatus(void *linux_side, SteamRelayNetworkStatus_t * pDetails)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetRelayNetworkStatus( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetRelayNetworkStatus((SteamRelayNetworkStatus_t *)pDetails);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetRelayNetworkStatus_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetRelayNetworkStatus_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetRelayNetworkStatus( params->pDetails );
+    return 0;
 }
 
-float cppISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalPingLocation(void *linux_side, SteamNetworkPingLocation_t * result)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalPingLocation( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetLocalPingLocation((SteamNetworkPingLocation_t *)result);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalPingLocation_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalPingLocation_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetLocalPingLocation( params->result );
+    return 0;
 }
 
-int cppISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeBetweenTwoLocations(void *linux_side, const SteamNetworkPingLocation_t * location1, const SteamNetworkPingLocation_t * location2)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeBetweenTwoLocations( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->EstimatePingTimeBetweenTwoLocations((const SteamNetworkPingLocation_t *)location1, (const SteamNetworkPingLocation_t *)location2);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeBetweenTwoLocations_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeBetweenTwoLocations_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->EstimatePingTimeBetweenTwoLocations( params->location1, params->location2 );
+    return 0;
 }
 
-int cppISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeFromLocalHost(void *linux_side, const SteamNetworkPingLocation_t * remoteLocation)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeFromLocalHost( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->EstimatePingTimeFromLocalHost((const SteamNetworkPingLocation_t *)remoteLocation);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeFromLocalHost_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_EstimatePingTimeFromLocalHost_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->EstimatePingTimeFromLocalHost( params->remoteLocation );
+    return 0;
 }
 
-void cppISteamNetworkingUtils_SteamNetworkingUtils002_ConvertPingLocationToString(void *linux_side, const SteamNetworkPingLocation_t * location, char * pszBuf, int cchBufSize)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_ConvertPingLocationToString( void *args )
 {
-    ((ISteamNetworkingUtils*)linux_side)->ConvertPingLocationToString((const SteamNetworkPingLocation_t *)location, (char *)pszBuf, (int)cchBufSize);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_ConvertPingLocationToString_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_ConvertPingLocationToString_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    iface->ConvertPingLocationToString( params->location, params->pszBuf, params->cchBufSize );
+    return 0;
 }
 
-bool cppISteamNetworkingUtils_SteamNetworkingUtils002_ParsePingLocationString(void *linux_side, const char * pszString, SteamNetworkPingLocation_t * result)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_ParsePingLocationString( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->ParsePingLocationString((const char *)pszString, (SteamNetworkPingLocation_t *)result);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_ParsePingLocationString_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_ParsePingLocationString_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->ParsePingLocationString( params->pszString, params->result );
+    return 0;
 }
 
-bool cppISteamNetworkingUtils_SteamNetworkingUtils002_CheckPingDataUpToDate(void *linux_side, float flMaxAgeSeconds)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_CheckPingDataUpToDate( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->CheckPingDataUpToDate((float)flMaxAgeSeconds);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_CheckPingDataUpToDate_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_CheckPingDataUpToDate_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->CheckPingDataUpToDate( params->flMaxAgeSeconds );
+    return 0;
 }
 
-int cppISteamNetworkingUtils_SteamNetworkingUtils002_GetPingToDataCenter(void *linux_side, SteamNetworkingPOPID popID, SteamNetworkingPOPID * pViaRelayPoP)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetPingToDataCenter( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetPingToDataCenter((SteamNetworkingPOPID)popID, (SteamNetworkingPOPID *)pViaRelayPoP);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetPingToDataCenter_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetPingToDataCenter_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetPingToDataCenter( params->popID, params->pViaRelayPoP );
+    return 0;
 }
 
-int cppISteamNetworkingUtils_SteamNetworkingUtils002_GetDirectPingToPOP(void *linux_side, SteamNetworkingPOPID popID)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetDirectPingToPOP( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetDirectPingToPOP((SteamNetworkingPOPID)popID);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetDirectPingToPOP_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetDirectPingToPOP_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetDirectPingToPOP( params->popID );
+    return 0;
 }
 
-int cppISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPCount(void *linux_side)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPCount( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetPOPCount();
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPCount_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPCount_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetPOPCount(  );
+    return 0;
 }
 
-int cppISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPList(void *linux_side, SteamNetworkingPOPID * list, int nListSz)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPList( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetPOPList((SteamNetworkingPOPID *)list, (int)nListSz);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPList_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetPOPList_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetPOPList( params->list, params->nListSz );
+    return 0;
 }
 
-SteamNetworkingMicroseconds cppISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalTimestamp(void *linux_side)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalTimestamp( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetLocalTimestamp();
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalTimestamp_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetLocalTimestamp_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetLocalTimestamp(  );
+    return 0;
 }
 
-void cppISteamNetworkingUtils_SteamNetworkingUtils002_SetDebugOutputFunction(void *linux_side, ESteamNetworkingSocketsDebugOutputType eDetailLevel, FSteamNetworkingSocketsDebugOutput pfnFunc)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_SetDebugOutputFunction( void *args )
 {
-    pfnFunc = (FSteamNetworkingSocketsDebugOutput)manual_convert_FSteamNetworkingSocketsDebugOutput((void*)pfnFunc);
-    ((ISteamNetworkingUtils*)linux_side)->SetDebugOutputFunction((ESteamNetworkingSocketsDebugOutputType)eDetailLevel, (FSteamNetworkingSocketsDebugOutput)pfnFunc);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_SetDebugOutputFunction_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_SetDebugOutputFunction_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    void (*U_CDECL u_pfnFunc)(uint32_t, const char *) = manual_convert_SetDebugOutputFunction_pfnFunc( params->pfnFunc );
+    iface->SetDebugOutputFunction( params->eDetailLevel, u_pfnFunc );
+    return 0;
 }
 
-bool cppISteamNetworkingUtils_SteamNetworkingUtils002_SetConfigValue(void *linux_side, ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj, ESteamNetworkingConfigDataType eDataType, const void * pArg)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_SetConfigValue( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->SetConfigValue((ESteamNetworkingConfigValue)eValue, (ESteamNetworkingConfigScope)eScopeType, (intptr_t)scopeObj, (ESteamNetworkingConfigDataType)eDataType, (const void *)pArg);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_SetConfigValue_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_SetConfigValue_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->SetConfigValue( params->eValue, params->eScopeType, params->scopeObj, params->eDataType, params->pArg );
+    return 0;
 }
 
-ESteamNetworkingGetConfigValueResult cppISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValue(void *linux_side, ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj, ESteamNetworkingConfigDataType * pOutDataType, void * pResult, size_t * cbResult)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValue( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetConfigValue((ESteamNetworkingConfigValue)eValue, (ESteamNetworkingConfigScope)eScopeType, (intptr_t)scopeObj, (ESteamNetworkingConfigDataType *)pOutDataType, (void *)pResult, (size_t *)cbResult);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValue_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValue_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetConfigValue( params->eValue, params->eScopeType, params->scopeObj, params->pOutDataType, params->pResult, params->cbResult );
+    return 0;
 }
 
-bool cppISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValueInfo(void *linux_side, ESteamNetworkingConfigValue eValue, const char ** pOutName, ESteamNetworkingConfigDataType * pOutDataType, ESteamNetworkingConfigScope * pOutScope, ESteamNetworkingConfigValue * pOutNextValue)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValueInfo( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetConfigValueInfo((ESteamNetworkingConfigValue)eValue, (const char **)pOutName, (ESteamNetworkingConfigDataType *)pOutDataType, (ESteamNetworkingConfigScope *)pOutScope, (ESteamNetworkingConfigValue *)pOutNextValue);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValueInfo_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetConfigValueInfo_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetConfigValueInfo( params->eValue, params->pOutName, params->pOutDataType, params->pOutScope, params->pOutNextValue );
+    return 0;
 }
 
-ESteamNetworkingConfigValue cppISteamNetworkingUtils_SteamNetworkingUtils002_GetFirstConfigValue(void *linux_side)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_GetFirstConfigValue( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->GetFirstConfigValue();
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetFirstConfigValue_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_GetFirstConfigValue_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->GetFirstConfigValue(  );
+    return 0;
 }
 
-void cppISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ToString(void *linux_side, const SteamNetworkingIPAddr * addr, char * buf, size_t cbBuf, bool bWithPort)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ToString( void *args )
 {
-    ((ISteamNetworkingUtils*)linux_side)->SteamNetworkingIPAddr_ToString((const SteamNetworkingIPAddr *)addr, (char *)buf, (size_t)cbBuf, (bool)bWithPort);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ToString_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ToString_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    iface->SteamNetworkingIPAddr_ToString( params->addr, params->buf, params->cbBuf, params->bWithPort );
+    return 0;
 }
 
-bool cppISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ParseString(void *linux_side, SteamNetworkingIPAddr * pAddr, const char * pszStr)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ParseString( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->SteamNetworkingIPAddr_ParseString((SteamNetworkingIPAddr *)pAddr, (const char *)pszStr);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ParseString_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIPAddr_ParseString_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->SteamNetworkingIPAddr_ParseString( params->pAddr, params->pszStr );
+    return 0;
 }
 
-void cppISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ToString(void *linux_side, const SteamNetworkingIdentity * identity, char * buf, size_t cbBuf)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ToString( void *args )
 {
-    ((ISteamNetworkingUtils*)linux_side)->SteamNetworkingIdentity_ToString((const SteamNetworkingIdentity *)identity, (char *)buf, (size_t)cbBuf);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ToString_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ToString_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    iface->SteamNetworkingIdentity_ToString( params->identity, params->buf, params->cbBuf );
+    return 0;
 }
 
-bool cppISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ParseString(void *linux_side, SteamNetworkingIdentity * pIdentity, const char * pszStr)
+NTSTATUS ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ParseString( void *args )
 {
-    return ((ISteamNetworkingUtils*)linux_side)->SteamNetworkingIdentity_ParseString((SteamNetworkingIdentity *)pIdentity, (const char *)pszStr);
+    struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ParseString_params *params = (struct ISteamNetworkingUtils_SteamNetworkingUtils002_SteamNetworkingIdentity_ParseString_params *)args;
+    struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *iface = (struct u_ISteamNetworkingUtils_SteamNetworkingUtils002 *)params->linux_side;
+    params->_ret = iface->SteamNetworkingIdentity_ParseString( params->pIdentity, params->pszStr );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

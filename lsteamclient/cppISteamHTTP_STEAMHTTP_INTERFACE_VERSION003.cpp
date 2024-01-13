@@ -1,142 +1,203 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_157/steam_api.h"
-#include "steamworks_sdk_157/steamnetworkingtypes.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_157
-#include "struct_converters.h"
-#include "cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003.h"
-HTTPRequestHandle cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateHTTPRequest(void *linux_side, EHTTPMethod eHTTPRequestMethod, const char * pchAbsoluteURL)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateHTTPRequest( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->CreateHTTPRequest((EHTTPMethod)eHTTPRequestMethod, (const char *)pchAbsoluteURL);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateHTTPRequest_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateHTTPRequest_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->CreateHTTPRequest( params->eHTTPRequestMethod, params->pchAbsoluteURL );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestContextValue(void *linux_side, HTTPRequestHandle hRequest, uint64 ulContextValue)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestContextValue( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestContextValue((HTTPRequestHandle)hRequest, (uint64)ulContextValue);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestContextValue_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestContextValue_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestContextValue( params->hRequest, params->ulContextValue );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestNetworkActivityTimeout(void *linux_side, HTTPRequestHandle hRequest, uint32 unTimeoutSeconds)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestNetworkActivityTimeout( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestNetworkActivityTimeout((HTTPRequestHandle)hRequest, (uint32)unTimeoutSeconds);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestNetworkActivityTimeout_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestNetworkActivityTimeout_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestNetworkActivityTimeout( params->hRequest, params->unTimeoutSeconds );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestHeaderValue(void *linux_side, HTTPRequestHandle hRequest, const char * pchHeaderName, const char * pchHeaderValue)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestHeaderValue( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestHeaderValue((HTTPRequestHandle)hRequest, (const char *)pchHeaderName, (const char *)pchHeaderValue);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestHeaderValue_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestHeaderValue_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestHeaderValue( params->hRequest, params->pchHeaderName, params->pchHeaderValue );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestGetOrPostParameter(void *linux_side, HTTPRequestHandle hRequest, const char * pchParamName, const char * pchParamValue)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestGetOrPostParameter( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestGetOrPostParameter((HTTPRequestHandle)hRequest, (const char *)pchParamName, (const char *)pchParamValue);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestGetOrPostParameter_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestGetOrPostParameter_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestGetOrPostParameter( params->hRequest, params->pchParamName, params->pchParamValue );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequest(void *linux_side, HTTPRequestHandle hRequest, SteamAPICall_t * pCallHandle)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequest( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SendHTTPRequest((HTTPRequestHandle)hRequest, (SteamAPICall_t *)pCallHandle);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequest_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequest_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SendHTTPRequest( params->hRequest, params->pCallHandle );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequestAndStreamResponse(void *linux_side, HTTPRequestHandle hRequest, SteamAPICall_t * pCallHandle)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequestAndStreamResponse( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SendHTTPRequestAndStreamResponse((HTTPRequestHandle)hRequest, (SteamAPICall_t *)pCallHandle);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequestAndStreamResponse_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SendHTTPRequestAndStreamResponse_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SendHTTPRequestAndStreamResponse( params->hRequest, params->pCallHandle );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_DeferHTTPRequest(void *linux_side, HTTPRequestHandle hRequest)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_DeferHTTPRequest( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->DeferHTTPRequest((HTTPRequestHandle)hRequest);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_DeferHTTPRequest_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_DeferHTTPRequest_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->DeferHTTPRequest( params->hRequest );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_PrioritizeHTTPRequest(void *linux_side, HTTPRequestHandle hRequest)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_PrioritizeHTTPRequest( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->PrioritizeHTTPRequest((HTTPRequestHandle)hRequest);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_PrioritizeHTTPRequest_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_PrioritizeHTTPRequest_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->PrioritizeHTTPRequest( params->hRequest );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderSize(void *linux_side, HTTPRequestHandle hRequest, const char * pchHeaderName, uint32 * unResponseHeaderSize)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderSize( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPResponseHeaderSize((HTTPRequestHandle)hRequest, (const char *)pchHeaderName, (uint32 *)unResponseHeaderSize);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderSize_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderSize_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPResponseHeaderSize( params->hRequest, params->pchHeaderName, params->unResponseHeaderSize );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderValue(void *linux_side, HTTPRequestHandle hRequest, const char * pchHeaderName, uint8 * pHeaderValueBuffer, uint32 unBufferSize)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderValue( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPResponseHeaderValue((HTTPRequestHandle)hRequest, (const char *)pchHeaderName, (uint8 *)pHeaderValueBuffer, (uint32)unBufferSize);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderValue_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseHeaderValue_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPResponseHeaderValue( params->hRequest, params->pchHeaderName, params->pHeaderValueBuffer, params->unBufferSize );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodySize(void *linux_side, HTTPRequestHandle hRequest, uint32 * unBodySize)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodySize( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPResponseBodySize((HTTPRequestHandle)hRequest, (uint32 *)unBodySize);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodySize_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodySize_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPResponseBodySize( params->hRequest, params->unBodySize );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodyData(void *linux_side, HTTPRequestHandle hRequest, uint8 * pBodyDataBuffer, uint32 unBufferSize)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodyData( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPResponseBodyData((HTTPRequestHandle)hRequest, (uint8 *)pBodyDataBuffer, (uint32)unBufferSize);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodyData_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPResponseBodyData_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPResponseBodyData( params->hRequest, params->pBodyDataBuffer, params->unBufferSize );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPStreamingResponseBodyData(void *linux_side, HTTPRequestHandle hRequest, uint32 cOffset, uint8 * pBodyDataBuffer, uint32 unBufferSize)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPStreamingResponseBodyData( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPStreamingResponseBodyData((HTTPRequestHandle)hRequest, (uint32)cOffset, (uint8 *)pBodyDataBuffer, (uint32)unBufferSize);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPStreamingResponseBodyData_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPStreamingResponseBodyData_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPStreamingResponseBodyData( params->hRequest, params->cOffset, params->pBodyDataBuffer, params->unBufferSize );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseHTTPRequest(void *linux_side, HTTPRequestHandle hRequest)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseHTTPRequest( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->ReleaseHTTPRequest((HTTPRequestHandle)hRequest);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseHTTPRequest_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseHTTPRequest_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->ReleaseHTTPRequest( params->hRequest );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPDownloadProgressPct(void *linux_side, HTTPRequestHandle hRequest, float * pflPercentOut)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPDownloadProgressPct( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPDownloadProgressPct((HTTPRequestHandle)hRequest, (float *)pflPercentOut);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPDownloadProgressPct_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPDownloadProgressPct_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPDownloadProgressPct( params->hRequest, params->pflPercentOut );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRawPostBody(void *linux_side, HTTPRequestHandle hRequest, const char * pchContentType, uint8 * pubBody, uint32 unBodyLen)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRawPostBody( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestRawPostBody((HTTPRequestHandle)hRequest, (const char *)pchContentType, (uint8 *)pubBody, (uint32)unBodyLen);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRawPostBody_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRawPostBody_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestRawPostBody( params->hRequest, params->pchContentType, params->pubBody, params->unBodyLen );
+    return 0;
 }
 
-HTTPCookieContainerHandle cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateCookieContainer(void *linux_side, bool bAllowResponsesToModify)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateCookieContainer( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->CreateCookieContainer((bool)bAllowResponsesToModify);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateCookieContainer_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_CreateCookieContainer_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->CreateCookieContainer( params->bAllowResponsesToModify );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseCookieContainer(void *linux_side, HTTPCookieContainerHandle hCookieContainer)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseCookieContainer( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->ReleaseCookieContainer((HTTPCookieContainerHandle)hCookieContainer);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseCookieContainer_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_ReleaseCookieContainer_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->ReleaseCookieContainer( params->hCookieContainer );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetCookie(void *linux_side, HTTPCookieContainerHandle hCookieContainer, const char * pchHost, const char * pchUrl, const char * pchCookie)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetCookie( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetCookie((HTTPCookieContainerHandle)hCookieContainer, (const char *)pchHost, (const char *)pchUrl, (const char *)pchCookie);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetCookie_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetCookie_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetCookie( params->hCookieContainer, params->pchHost, params->pchUrl, params->pchCookie );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestCookieContainer(void *linux_side, HTTPRequestHandle hRequest, HTTPCookieContainerHandle hCookieContainer)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestCookieContainer( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestCookieContainer((HTTPRequestHandle)hRequest, (HTTPCookieContainerHandle)hCookieContainer);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestCookieContainer_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestCookieContainer_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestCookieContainer( params->hRequest, params->hCookieContainer );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestUserAgentInfo(void *linux_side, HTTPRequestHandle hRequest, const char * pchUserAgentInfo)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestUserAgentInfo( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestUserAgentInfo((HTTPRequestHandle)hRequest, (const char *)pchUserAgentInfo);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestUserAgentInfo_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestUserAgentInfo_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestUserAgentInfo( params->hRequest, params->pchUserAgentInfo );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRequiresVerifiedCertificate(void *linux_side, HTTPRequestHandle hRequest, bool bRequireVerifiedCertificate)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRequiresVerifiedCertificate( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestRequiresVerifiedCertificate((HTTPRequestHandle)hRequest, (bool)bRequireVerifiedCertificate);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRequiresVerifiedCertificate_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestRequiresVerifiedCertificate_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestRequiresVerifiedCertificate( params->hRequest, params->bRequireVerifiedCertificate );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestAbsoluteTimeoutMS(void *linux_side, HTTPRequestHandle hRequest, uint32 unMilliseconds)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestAbsoluteTimeoutMS( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->SetHTTPRequestAbsoluteTimeoutMS((HTTPRequestHandle)hRequest, (uint32)unMilliseconds);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestAbsoluteTimeoutMS_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_SetHTTPRequestAbsoluteTimeoutMS_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->SetHTTPRequestAbsoluteTimeoutMS( params->hRequest, params->unMilliseconds );
+    return 0;
 }
 
-bool cppISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPRequestWasTimedOut(void *linux_side, HTTPRequestHandle hRequest, bool * pbWasTimedOut)
+NTSTATUS ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPRequestWasTimedOut( void *args )
 {
-    return ((ISteamHTTP*)linux_side)->GetHTTPRequestWasTimedOut((HTTPRequestHandle)hRequest, (bool *)pbWasTimedOut);
+    struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPRequestWasTimedOut_params *params = (struct ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003_GetHTTPRequestWasTimedOut_params *)args;
+    struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *iface = (struct u_ISteamHTTP_STEAMHTTP_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetHTTPRequestWasTimedOut( params->hRequest, params->pbWasTimedOut );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

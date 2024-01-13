@@ -1,116 +1,163 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_111x/steam_api.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_111x
-#include "struct_converters.h"
-#include "cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003.h"
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileWrite(void *linux_side, const char * pchFile, const void * pvData, int32 cubData)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileWrite( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FileWrite((const char *)pchFile, (const void *)pvData, (int32)cubData);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileWrite_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileWrite_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FileWrite( params->pchFile, params->pvData, params->cubData );
+    return 0;
 }
 
-int32 cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileRead(void *linux_side, const char * pchFile, void * pvData, int32 cubDataToRead)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileRead( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FileRead((const char *)pchFile, (void *)pvData, (int32)cubDataToRead);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileRead_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileRead_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FileRead( params->pchFile, params->pvData, params->cubDataToRead );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileForget(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileForget( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FileForget((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileForget_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileForget_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FileForget( params->pchFile );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileDelete(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileDelete( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FileDelete((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileDelete_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileDelete_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FileDelete( params->pchFile );
+    return 0;
 }
 
-SteamAPICall_t cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileShare(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileShare( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FileShare((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileShare_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileShare_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FileShare( params->pchFile );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileExists(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileExists( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FileExists((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileExists_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FileExists_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FileExists( params->pchFile );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FilePersisted(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FilePersisted( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->FilePersisted((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FilePersisted_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_FilePersisted_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->FilePersisted( params->pchFile );
+    return 0;
 }
 
-int32 cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileSize(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileSize( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetFileSize((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileSize_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileSize_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetFileSize( params->pchFile );
+    return 0;
 }
 
-int64 cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileTimestamp(void *linux_side, const char * pchFile)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileTimestamp( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetFileTimestamp((const char *)pchFile);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileTimestamp_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileTimestamp_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetFileTimestamp( params->pchFile );
+    return 0;
 }
 
-int32 cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileCount(void *linux_side)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileCount( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetFileCount();
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileCount_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileCount_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetFileCount(  );
+    return 0;
 }
 
-const char * cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileNameAndSize(void *linux_side, int iFile, int32 * pnFileSizeInBytes)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileNameAndSize( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetFileNameAndSize((int)iFile, (int32 *)pnFileSizeInBytes);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileNameAndSize_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetFileNameAndSize_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetFileNameAndSize( params->iFile, params->pnFileSizeInBytes );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetQuota(void *linux_side, int32 * pnTotalBytes, int32 * puAvailableBytes)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetQuota( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetQuota((int32 *)pnTotalBytes, (int32 *)puAvailableBytes);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetQuota_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetQuota_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetQuota( params->pnTotalBytes, params->puAvailableBytes );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForAccount(void *linux_side)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForAccount( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->IsCloudEnabledForAccount();
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForAccount_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForAccount_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->IsCloudEnabledForAccount(  );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForApp(void *linux_side)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForApp( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->IsCloudEnabledForApp();
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForApp_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_IsCloudEnabledForApp_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->IsCloudEnabledForApp(  );
+    return 0;
 }
 
-void cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_SetCloudEnabledForApp(void *linux_side, bool bEnabled)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_SetCloudEnabledForApp( void *args )
 {
-    ((ISteamRemoteStorage*)linux_side)->SetCloudEnabledForApp((bool)bEnabled);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_SetCloudEnabledForApp_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_SetCloudEnabledForApp_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    iface->SetCloudEnabledForApp( params->bEnabled );
+    return 0;
 }
 
-SteamAPICall_t cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCDownload(void *linux_side, UGCHandle_t hContent)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCDownload( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->UGCDownload((UGCHandle_t)hContent);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCDownload_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCDownload_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->UGCDownload( params->hContent );
+    return 0;
 }
 
-bool cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetUGCDetails(void *linux_side, UGCHandle_t hContent, AppId_t * pnAppID, char ** ppchName, int32 * pnFileSizeInBytes, CSteamID * pSteamIDOwner)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetUGCDetails( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetUGCDetails((UGCHandle_t)hContent, (AppId_t *)pnAppID, (char **)ppchName, (int32 *)pnFileSizeInBytes, (CSteamID *)pSteamIDOwner);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetUGCDetails_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetUGCDetails_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetUGCDetails( params->hContent, params->pnAppID, params->ppchName, params->pnFileSizeInBytes, params->pSteamIDOwner );
+    return 0;
 }
 
-int32 cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCRead(void *linux_side, UGCHandle_t hContent, void * pvData, int32 cubDataToRead)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCRead( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->UGCRead((UGCHandle_t)hContent, (void *)pvData, (int32)cubDataToRead);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCRead_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_UGCRead_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->UGCRead( params->hContent, params->pvData, params->cubDataToRead );
+    return 0;
 }
 
-int32 cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCCount(void *linux_side)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCCount( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetCachedUGCCount();
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCCount_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCCount_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetCachedUGCCount(  );
+    return 0;
 }
 
-UGCHandle_t cppISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCHandle(void *linux_side, int32 iCachedContent)
+NTSTATUS ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCHandle( void *args )
 {
-    return ((ISteamRemoteStorage*)linux_side)->GetCachedUGCHandle((int32)iCachedContent);
+    struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCHandle_params *params = (struct ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003_GetCachedUGCHandle_params *)args;
+    struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *iface = (struct u_ISteamRemoteStorage_STEAMREMOTESTORAGE_INTERFACE_VERSION003 *)params->linux_side;
+    params->_ret = iface->GetCachedUGCHandle( params->iCachedContent );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

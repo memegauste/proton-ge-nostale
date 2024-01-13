@@ -1,37 +1,35 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_157/steam_api.h"
-#include "steamworks_sdk_157/steamnetworkingtypes.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_157
-#include "struct_converters.h"
-#include "cppISteamVideo_STEAMVIDEO_INTERFACE_V002.h"
-void cppISteamVideo_STEAMVIDEO_INTERFACE_V002_GetVideoURL(void *linux_side, AppId_t unVideoAppID)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetVideoURL( void *args )
 {
-    ((ISteamVideo*)linux_side)->GetVideoURL((AppId_t)unVideoAppID);
+    struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetVideoURL_params *params = (struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetVideoURL_params *)args;
+    struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *iface = (struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *)params->linux_side;
+    iface->GetVideoURL( params->unVideoAppID );
+    return 0;
 }
 
-bool cppISteamVideo_STEAMVIDEO_INTERFACE_V002_IsBroadcasting(void *linux_side, int * pnNumViewers)
+NTSTATUS ISteamVideo_STEAMVIDEO_INTERFACE_V002_IsBroadcasting( void *args )
 {
-    return ((ISteamVideo*)linux_side)->IsBroadcasting((int *)pnNumViewers);
+    struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_IsBroadcasting_params *params = (struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_IsBroadcasting_params *)args;
+    struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *iface = (struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *)params->linux_side;
+    params->_ret = iface->IsBroadcasting( params->pnNumViewers );
+    return 0;
 }
 
-void cppISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFSettings(void *linux_side, AppId_t unVideoAppID)
+NTSTATUS ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFSettings( void *args )
 {
-    ((ISteamVideo*)linux_side)->GetOPFSettings((AppId_t)unVideoAppID);
+    struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFSettings_params *params = (struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFSettings_params *)args;
+    struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *iface = (struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *)params->linux_side;
+    iface->GetOPFSettings( params->unVideoAppID );
+    return 0;
 }
 
-bool cppISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFStringForApp(void *linux_side, AppId_t unVideoAppID, char * pchBuffer, int32 * pnBufferSize)
+NTSTATUS ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFStringForApp( void *args )
 {
-    return ((ISteamVideo*)linux_side)->GetOPFStringForApp((AppId_t)unVideoAppID, (char *)pchBuffer, (int32 *)pnBufferSize);
+    struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFStringForApp_params *params = (struct ISteamVideo_STEAMVIDEO_INTERFACE_V002_GetOPFStringForApp_params *)args;
+    struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *iface = (struct u_ISteamVideo_STEAMVIDEO_INTERFACE_V002 *)params->linux_side;
+    params->_ret = iface->GetOPFStringForApp( params->unVideoAppID, params->pchBuffer, params->pnBufferSize );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

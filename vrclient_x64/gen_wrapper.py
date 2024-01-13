@@ -3,17 +3,15 @@
 #NOTE: If you make modifications here, consider whether they should
 #be duplicated in ../lsteamclient/gen_wrapper.py
 
-from __future__ import print_function
-
 CLANG_PATH='/usr/lib/clang/15'
 
-from clang.cindex import CursorKind, Index, Type, TypeKind
-import pprint
-import sys
+from clang.cindex import Cursor, CursorKind, Index, TypeKind
+import concurrent.futures
 import os
 import re
 
-sdk_versions = [
+SDK_VERSIONS = [
+    "v1.26.7",
     "v1.23.7",
     "v1.16.8",
     "v1.14.15",
@@ -72,344 +70,527 @@ sdk_versions = [
     "0.9.0",
 ]
 
-files = [
-    ("ivrclientcore.h",
+ABIS = ['u32', 'u64', 'w32', 'w64']
+
+SDK_SOURCES = {
+    "ivrclientcore.h": [
         [ #classes
-        "IVRApplications",
-        "IVRChaperone",
-        "IVRChaperoneSetup",
-        "IVRCompositor",
-        "IVRControlPanel",
-        "IVRDriverManager",
-        "IVRExtendedDisplay",
-        "IVRNotifications",
-        "IVRInput",
-        "IVRIOBuffer",
-        "IVRMailbox",
-        "IVROverlay",
-        "IVRRenderModels",
-        "IVRResources",
-        "IVRScreenshots",
-        "IVRSettings",
-        "IVRSystem",
-        "IVRTrackedCamera",
-        "IVRHeadsetView",
-        "IVROverlayView",
-        "IVRClientCore",
-        ], [ #vrclient-allocated structs
-        "RenderModel_t",
-        "RenderModel_TextureMap_t",
+            "IVRApplications",
+            "IVRChaperone",
+            "IVRChaperoneSetup",
+            "IVRCompositor",
+            "IVRControlPanel",
+            "IVRDriverManager",
+            "IVRExtendedDisplay",
+            "IVRNotifications",
+            "IVRInput",
+            "IVRIOBuffer",
+            "IVRMailbox",
+            "IVROverlay",
+            "IVRRenderModels",
+            "IVRResources",
+            "IVRScreenshots",
+            "IVRSettings",
+            "IVRSystem",
+            "IVRTrackedCamera",
+            "IVRHeadsetView",
+            "IVROverlayView",
+            "IVRClientCore",
         ]
-    ),
-]
-
-next_is_size_structs = [
-        "VREvent_t",
-        "VRControllerState001_t",
-        "InputAnalogActionData_t",
-        "InputDigitalActionData_t",
-        "InputPoseActionData_t",
-        "InputSkeletalActionData_t",
-        "CameraVideoStreamFrameHeader_t",
-        "Compositor_CumulativeStats",
-        "VRActiveActionSet_t",
-        "InputOriginInfo_t",
-        "InputBindingInfo_t",
-]
-
-unhandled_next_is_size_structs = [
-        "VROverlayIntersectionMaskPrimitive_t" # not next, but next-next uint32 is the size
-]
-
-struct_size_fields = {
-        "Compositor_OverlaySettings": ["size"],
-        "Compositor_FrameTiming": ["size", "m_nSize"],
-        "DriverDirectMode_FrameTiming": ["m_nSize"],
+    ],
 }
 
-path_conversions = [
-    {
-        "parent_name": "SetActionManifestPath",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchActionManifestPath"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "SetOverlayFromFile",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchFilePath"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "AddApplicationManifest",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchApplicationManifestFullPath"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "RemoveApplicationManifest",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchApplicationManifestFullPath"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "RequestScreenshot",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchPreviewFilename", "pchVRFilename"],
-        "w2l_arrays": [False, False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "TakeStereoScreenshot",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchPreviewFilename", "pchVRFilename"],
-        "w2l_arrays": [False, False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "SubmitScreenshot",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchSourcePreviewFilename", "pchSourceVRFilename"],
-        "w2l_arrays": [False, False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "GetScreenshotPropertyFilename",
-        "l2w_names":["pchFilename"],
-        "l2w_lens":["cchFilename"],
-        "w2l_names": [],
-        "w2l_arrays": [],
-        "return_is_size": True
-    },
-    {
-        "parent_name": "undoc23",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["a"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "undoc27",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["a"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
-    {
-        "parent_name": "SetStageOverride_Async",
-        "l2w_names":[],
-        "l2w_lens":[],
-        "w2l_names": ["pchRenderModelPath"],
-        "w2l_arrays": [False],
-        "return_is_size": False
-    },
+SDK_CLASSES = {klass: source for source, value in SDK_SOURCES.items()
+               for klass in value[0]}
 
-#    {#maybe?
-#        "parent_name": "GetRenderModelOriginalPath",
-#        "l2w_names":[pchOriginalPath],
-#        "l2w_lens":[unOriginalPathLen],
-#        "w2l_names": [],
-#        "w2l_arrays": [],
-#        "return_is_size": False
-#    },
-#    {#maybe?
-#        "parent_name": "GetResourceFullPath",
-#        "l2w_names":[pchPathBuffer],
-#        "l2w_lens":[unBufferLen],
-#        "w2l_names": [pchResourceTypeDirectory],
-#        "w2l_arrays": [False],
-#        "return_is_size": False
-#    },
-    #IVRInput::GetInputSourceHandle
-    #IVRIOBuffer::Open
-
-    #TODO: LaunchInternalProcess, need steam cooperation
-]
-
-aliases = {
-    #Some interface versions are not present in the public SDK
-    #headers, but are actually requested by games. It would be nice
-    #to verify that these interface versions are actually binary
-    #compatible. Lacking that, we hope the next highest version
-    #is compatible.
-#    "SteamClient012":["SteamClient013"],
-#    "SteamUtils004":["SteamUtils003"], # TimeShift uses SteamUtils003
-
-
-    #leaving these commented-out. let's see if they turn up in practice,
-    #and handle them correctly if so.
-
-#    "SteamFriends011":["SteamFriends010"],
-#    "SteamFriends013":["SteamFriends012"],
-#    "SteamGameServer008":["SteamGameServer007", "SteamGameServer006"],
-#    "SteamMatchMaking004":["SteamMatchMaking003"],
-#    "SteamMatchMaking006":["SteamMatchMaking005"],
-#    "STEAMREMOTESTORAGE_INTERFACE_VERSION004":["STEAMREMOTESTORAGE_INTERFACE_VERSION003"],
-#    "STEAMREMOTESTORAGE_INTERFACE_VERSION008":["STEAMREMOTESTORAGE_INTERFACE_VERSION007"],
-#    "STEAMREMOTESTORAGE_INTERFACE_VERSION010":["STEAMREMOTESTORAGE_INTERFACE_VERSION009"],
-#    "STEAMUGC_INTERFACE_VERSION005":["STEAMUGC_INTERFACE_VERSION004"],
-#    "STEAMUGC_INTERFACE_VERSION007":["STEAMUGC_INTERFACE_VERSION006"],
-#    "SteamUser016":["SteamUser015"],
-#    "STEAMUSERSTATS_INTERFACE_VERSION009":["STEAMUSERSTATS_INTERFACE_VERSION008"],
+# these structs are manually confirmed to be equivalent
+EXEMPT_STRUCTS = {
+    "HmdColor_t",
+    "HmdMatrix33_t",
+    "HmdMatrix34_t",
+    "HmdMatrix44_t",
+    "HmdQuad_t",
+    "HmdQuaternion_t",
+    "HmdQuaternionf_t",
+    "HmdVector2_t",
+    "HmdVector3_t",
+    "HmdVector3d_t",
+    "HmdVector4_t",
+    "IntersectionMaskCircle_t",
+    "IntersectionMaskRectangle_t",
+    "CVRSettingHelper",
 }
 
-# TODO: we could do this automatically by creating temp files and
-# having clang parse those and detect when the MS-style padding results
-# in identical struct widths. But there's only a couple, so let's cheat...
-skip_structs = [
-#        "RemoteStorageGetPublishedFileDetailsResult_t_9740",
-#        "SteamUGCQueryCompleted_t_20",
-#        "SteamUGCRequestUGCDetailsResult_t_9764"
+# structs for which the size is important, either because of arrays or size parameters
+SIZED_STRUCTS = {
+    "CameraVideoStreamFrameHeader_t",
+    "Compositor_BenchmarkResults",
+    "Compositor_CumulativeStats",
+    "Compositor_StageRenderSettings",
+    "InputAnalogActionData_t",
+    "InputBindingInfo_t",
+    "InputDigitalActionData_t",
+    "InputOriginInfo_t",
+    "InputPoseActionData_t",
+    "InputSkeletalActionData_t",
+    "InputSkeletonActionData_t",
+    "Texture_t",
+    "TrackedDevicePose_t",
+    "VRActiveActionSet_t",
+    "VRBoneTransform_t",
+    "VRControllerState001_t",
+    "VREvent_t",
+    "VROverlayIntersectionMaskPrimitive_t",
+    "VROverlayView_t",
+}
+
+STRUCTS_NEXT_IS_SIZE = [
+    "VREvent_t",
+    "VRControllerState001_t",
+    "InputAnalogActionData_t",
+    "InputDigitalActionData_t",
+    "InputPoseActionData_t",
+    "InputSkeletalActionData_t",
+    "CameraVideoStreamFrameHeader_t",
+    "Compositor_CumulativeStats",
+    "VRActiveActionSet_t",
+    "InputOriginInfo_t",
+    "InputBindingInfo_t",
 ]
 
-struct_conversion_cache = {}
-struct_needs_size_adjustment_cache = {}
-
-print_sizes = []
-
-class_versions = {}
-
-def get_params(f):
-    return [p for p in f.get_children() if p.kind == CursorKind.PARM_DECL]
-
-def ivrclientcore_is_hmd_present(cppname, method):
-    return "ivrclientcore_is_hmd_present"
-
-def ivrclientcore_init(cppname, method):
-    if "002" in cppname:
-        return "ivrclientcore_002_init"
-    return "ivrclientcore_init"
-
-def ivrclientcore_get_generic_interface(cppname, method):
-    return "ivrclientcore_get_generic_interface"
-
-def ivrclientcore_cleanup(cppname, method):
-    return "ivrclientcore_cleanup"
-
-def ivrsystem_get_dxgi_output_info(cppname, method):
-    param_count = len(get_params(method))
-    return {
-        1: "get_dxgi_output_info",
-        2: "get_dxgi_output_info2"
-    }.get(param_count, "unhandled_get_dxgi_output_info_method")
-
-def ivrsystem_get_output_device(cppname, method):
-    #introduced in 016, changed in 017
-    if "016" in cppname:
-        return "ivrsystem_016_get_output_device"
-    return "ivrsystem_get_output_device"
-
-def ivrcompositor_submit(cppname, method):
-    if "005" in cppname:
-        return "ivrcompositor_005_submit"
-    if "006" in cppname:
-        return "ivrcompositor_006_submit"
-    if "007" in cppname:
-        return "ivrcompositor_007_submit"
-    if "008" in cppname:
-        return "ivrcompositor_008_submit"
-    return "ivrcompositor_submit"
-
-def ivrcompositor_set_skybox_override(cppname, method):
-    if "008" in cppname:
-        return "ivrcompositor_008_set_skybox_override"
-    return "ivrcompositor_set_skybox_override"
-
-def ivrcompositor_post_present_handoff(cppname, method):
-    return "ivrcompositor_post_present_handoff"
-
-def ivrcompositor_wait_get_poses(cppname, method):
-    for version in ["016", "017", "018", "019", "020", "021", "022", "024", "026"]:
-        if version in cppname:
-            return "ivrcompositor_wait_get_poses"
-    return None
-
-def ivrcompositor_get_vulkan_device_extensions_required(cppname, method):
-    return "ivrcompositor_get_vulkan_device_extensions_required"
-
-def ivrrendermodels_load_texture_d3d11_async(cppname, method):
-    assert "004" in cppname or "005" in cppname or "006" in cppname
-    return "ivrrendermodels_load_texture_d3d11_async"
-
-def ivrrendermodels_free_texture_d3d11(cppname, method):
-    assert "004" in cppname or "005" in cppname or "006" in cppname
-    return "ivrrendermodels_free_texture_d3d11"
-
-def ivrrendermodels_load_into_texture_d3d11_async(cppname, method):
-    assert "005" in cppname or "006" in cppname
-    return "ivrrendermodels_load_into_texture_d3d11_async"
-
-def ivrmailbox_undoc3(cppname, method):
-    assert "001" in cppname
-    return "ivrmailbox_undoc3"
-
-def ivroverlay_set_overlay_texture(cppname, method):
-    if "001" in cppname:
-        return "ivroverlay_001_set_overlay_texture"
-    for version in ["002", "003", "004", "005"]:
-        if version in cppname:
-            return "ivroverlay_005_set_overlay_texture"
-    assert \
-            "007" in cppname or \
-            "008" in cppname or \
-            "010" in cppname or \
-            "011" in cppname or \
-            "012" in cppname or \
-            "013" in cppname or \
-            "014" in cppname or \
-            "016" in cppname or \
-            "017" in cppname or \
-            "018" in cppname or \
-            "019" in cppname or \
-            "020" in cppname or \
-            "021" in cppname or \
-            "022" in cppname or \
-            "024" in cppname or \
-            "025" in cppname or \
-            "026" in cppname
-    return "ivroverlay_set_overlay_texture"
-
-def ivrinput_get_digital_action_data(cppname, method):
-    if "003" in cppname:
-        return None
-    return "ivrinput_get_digital_action_data"
-
-method_overrides = [
-    ("IVRClientCore", "BIsHmdPresent", ivrclientcore_is_hmd_present),
-    ("IVRClientCore", "Init", ivrclientcore_init),
-    ("IVRClientCore", "GetGenericInterface", ivrclientcore_get_generic_interface),
-    ("IVRClientCore", "Cleanup", ivrclientcore_cleanup),
-    ("IVRSystem", "GetDXGIOutputInfo", ivrsystem_get_dxgi_output_info),
-    ("IVRSystem", "GetOutputDevice", ivrsystem_get_output_device),
-    ("IVRCompositor", "Submit", ivrcompositor_submit),
-    ("IVRCompositor", "SetSkyboxOverride", ivrcompositor_set_skybox_override),
-    ("IVRCompositor", "PostPresentHandoff", ivrcompositor_post_present_handoff),
-    ("IVRCompositor", "WaitGetPoses", ivrcompositor_wait_get_poses),
-    ("IVRCompositor", "GetVulkanDeviceExtensionsRequired", ivrcompositor_get_vulkan_device_extensions_required),
-    ("IVRRenderModels", "LoadTextureD3D11_Async", ivrrendermodels_load_texture_d3d11_async),
-    ("IVRRenderModels", "FreeTextureD3D11", ivrrendermodels_free_texture_d3d11),
-    ("IVRRenderModels", "LoadIntoTextureD3D11_Async", ivrrendermodels_load_into_texture_d3d11_async),
-    ("IVRMailbox", "undoc3", ivrmailbox_undoc3),
-    ("IVROverlay", "SetOverlayTexture", ivroverlay_set_overlay_texture),
-    ("IVRInput",  "GetDigitalActionData", ivrinput_get_digital_action_data),
+STRUCTS_IS_INPUT_ARRAY = [
+    "VRActiveActionSet_t",
 ]
 
-method_overrides_data = [
-    ("IVRClientCore", "struct client_core_data", None),
+STRUCTS_NEXT_IS_SIZE_UNHANDLED = [
+    "VROverlayIntersectionMaskPrimitive_t" # not next, but next-next uint32 is the size
 ]
+
+STRUCTS_SIZE_FIELD = {
+    "Compositor_OverlaySettings": ["size"],
+    "Compositor_FrameTiming": ["size", "m_nSize"],
+    "DriverDirectMode_FrameTiming": ["m_nSize"],
+}
+
+PATH_CONV_METHODS_UTOW = {
+    "IVRScreenshots_GetScreenshotPropertyFilename": {
+        "pchFilename": {"len": "cchFilename"},
+        "ret_size": True,
+    },
+
+# maybe?
+#    "IVRRenderModels_GetRenderModelOriginalPath": {
+#        "pchOriginalPath": {"len": unOriginalPathLen},
+#    },
+#    "IVRResources_GetResourceFullPath": {
+#        "pchPathBuffer": {"len": unBufferLen},
+#    },
+#    IVRInput::GetInputSourceHandle
+#    IVRIOBuffer::Open
+#    TODO: LaunchInternalProcess, need steam cooperation
+}
+
+PATH_CONV_METHODS_WTOU = {
+    "IVRInput_SetActionManifestPath": {"pchActionManifestPath"},
+    "IVRCompositor_SetOverlayFromFile": {"pchFilePath"},
+    "IVROverlay_SetOverlayFromFile": {"pchFilePath"},
+    "IVRApplications_AddApplicationManifest": {"pchApplicationManifestFullPath"},
+    "IVRApplications_RemoveApplicationManifest": {"pchApplicationManifestFullPath"},
+    "IVRScreenshots_RequestScreenshot": {"pchVRFilename", "pchPreviewFilename"},
+    "IVRScreenshots_TakeStereoScreenshot": {"pchVRFilename", "pchPreviewFilename"},
+    "IVRScreenshots_SubmitScreenshot": {"pchSourcePreviewFilename", "pchSourceVRFilename"},
+    "IVRControlPanel_undoc23": {"a"},
+    "IVRControlPanel_undoc27": {"a"},
+    "IVRCompositor_SetStageOverride_Async": {"pchRenderModelPath"},
+
+# maybe?
+#    "IVRResources_GetResourceFullPath": {"pchResourceTypeDirectory"},
+#    IVRInput::GetInputSourceHandle
+#    IVRIOBuffer::Open
+#    TODO: LaunchInternalProcess, need steam cooperation
+}
+
+all_classes = {}
+all_records = {}
+all_structs = {}
+all_sources = {}
+all_versions = {}
+unique_structs = []
+
+
+UNIX_FUNCS = [
+    'vrclient_init',
+    'vrclient_HmdSystemFactory',
+    'vrclient_VRClientCoreFactory',
+]
+
+MANUAL_METHODS = {
+    "IVRClientCore_BIsHmdPresent": lambda ver, abi: abi == 'w',
+    "IVRClientCore_Init": lambda ver, abi: True,
+    "IVRClientCore_GetGenericInterface": lambda ver, abi: abi == 'w',
+    "IVRClientCore_Cleanup": lambda ver, abi: abi == 'w',
+    "IVRSystem_GetDXGIOutputInfo": lambda ver, abi: abi == 'w',
+    "IVRSystem_GetOutputDevice": lambda ver, abi: abi == 'u' and ver > 16,
+    "IVRCompositor_Submit": lambda ver, abi: ver > 8,
+    "IVRCompositor_SetSkyboxOverride": lambda ver, abi: ver > 8,
+    "IVRCompositor_PostPresentHandoff": lambda ver, abi: abi == 'w',
+    "IVRCompositor_WaitGetPoses": lambda ver, abi: abi == 'w' and ver > 15 and ver < 27,
+    "IVRCompositor_GetVulkanDeviceExtensionsRequired": lambda ver, abi: abi == 'u',
+    "IVRRenderModels_LoadTextureD3D11_Async": lambda ver, abi: abi == 'w',
+    "IVRRenderModels_FreeTextureD3D11": lambda ver, abi: abi == 'w',
+    "IVRRenderModels_LoadIntoTextureD3D11_Async": lambda ver, abi: abi == 'w',
+    "IVRRenderModels_LoadTexture": True,
+    "IVRRenderModels_LoadTexture_Async": True,
+    "IVRRenderModels_FreeTexture": True,
+    "IVRRenderModels_LoadRenderModel": lambda ver, abi: ver > 1,
+    "IVRRenderModels_LoadRenderModel_Async": True,
+    "IVRRenderModels_FreeRenderModel": lambda ver, abi: ver > 1,
+    "IVRMailbox_undoc3": lambda ver, abi: abi == 'u',
+    "IVROverlay_SetOverlayTexture": True,
+    "IVRInput_GetDigitalActionData": lambda ver, abi: abi == 'w' and ver > 3,
+    "IVRTrackedCamera_GetVideoStreamFrame": True,
+}
+
+
+def is_manual_method(klass, method, abi):
+    version = re.search(r'(\d+)$', klass.version)
+
+    key = f'{klass.name}_{method.name}'
+    needs_manual = MANUAL_METHODS.get(key, False)
+
+    if callable(needs_manual) and version:
+        return needs_manual(int(version[0]), abi)
+    return needs_manual
+
+
+class Padding:
+    def __init__(self, offset, size):
+        self.offset = offset
+        self.size = size
+
+
+class Field:
+    def __init__(self, cursor, struct, type, offset, name=None):
+        self._cursor = cursor
+        self._type = type
+
+        self.name = cursor.spelling if not name else name
+        self.type = cursor.type
+        self.size = self.type.get_size()
+        self.offset = offset
+
+    def needs_conversion(self, other):
+        return self._type.needs_conversion(other._type)
+
+
+class BasicType:
+    def __init__(self, type, abi):
+        self._type = type.get_canonical()
+        self._abi = abi
+        self._decl_order = 0
+        self._conv_cache = {}
+
+        self.size = self._type.get_size()
+        self.id = self._type.spelling
+
+    @property
+    def order(self):
+        return self._decl_order
+
+    def set_used(self, order=-1):
+        if self._decl_order <= order:
+            return
+        self._decl_order = order
+
+    def needs_conversion(self, other):
+        if self._type.kind == TypeKind.POINTER and self._type.get_pointee().kind == TypeKind.FUNCTIONPROTO:
+            return self._abi != other._abi
+        return False
+
+
+class Struct:
+    def __init__(self, sdkver, abi, cursor):
+        self._cursor = cursor
+        self._sdkver = sdkver
+        self._abi = abi
+        self._fields = None
+        self._decl_order = 0
+        self._conv_cache = {}
+
+        self.name = canonical_typename(self._cursor)
+        self.name = self.name.removeprefix("vr::")
+        self.type = self._cursor.type.get_canonical()
+        self.size = self.type.get_size()
+        self.align = self.type.get_align()
+        self.id = f'{abi}_{self.name}_{sdkver}'
+
+        if self._cursor.spelling in EXEMPT_STRUCTS:
+            self._fields = [Padding(0, self.size)]
+
+    @property
+    def order(self):
+        return self._decl_order
+
+    def set_used(self, order=-1):
+        if self._decl_order <= order:
+            return
+        self._decl_order = order
+        [f._type.set_used(order - 1) for f in self.fields]
+
+    @property
+    def padded_fields(self):
+        if self._fields: return self._fields
+
+        size, self._fields = 0, []
+        for cursor in self._cursor.get_children():
+            if cursor.kind == CursorKind.CXX_BASE_SPECIFIER \
+               and len(list(cursor.type.get_fields())) > 0:
+                base_type = Type(cursor.type, self._sdkver, self._abi)
+                self._fields += base_type.padded_fields
+                size = cursor.type.get_size()
+            break
+
+        for cursor in self.type.get_fields():
+            assert not cursor.is_bitfield()
+            offset = self.type.get_offset(cursor.spelling)
+            assert offset % 8 == 0
+            offset = offset // 8
+            # assert offset >= size or type(self) is Union
+
+            if size < offset: self._fields.append(Padding(size, offset - size))
+            field_type = Type(cursor.type, self._sdkver, self._abi)
+            self._fields.append(Field(cursor, self, field_type, offset))
+            size = max(size, offset + cursor.type.get_size())
+
+        if size < self.size: self._fields.append(Padding(size, self.size - size))
+        return self._fields
+
+    @property
+    def fields(self):
+        return [f for f in self.padded_fields if type(f) is not Padding]
+
+    def write_definition(self, out, prefix, converters):
+        version = all_versions[sdkver][self.name]
+        kind = 'union' if type(self) is Union else 'struct'
+        wrapped = len(prefix) > 0
+
+        out(f'#pragma pack( push, {self.align} )\n')
+        out(f'{kind} {prefix}{version}\n')
+        out(u'{\n')
+        for f in self.padded_fields:
+            if type(f) is Field:
+                out(f'    {declspec(f._cursor, f.name, prefix, wrapped)};\n')
+            else:
+                out(f'    uint8_t __pad_{f.offset}[{f.size}];\n')
+        for conv in converters:
+            out(u'#ifdef __cplusplus\n')
+            out(f'    operator {conv}{version}() const;\n')
+            out(u'#endif /* __cplusplus */\n')
+        out(u'};\n')
+        out(u'#pragma pack( pop )\n\n')
+
+    def write_checks(self, out, prefix):
+        version = all_versions[sdkver][self.name]
+
+        out(f'C_ASSERT( sizeof({prefix}{version}) >= {self.size} );\n')
+        for f in self.fields:
+            out(f'C_ASSERT( offsetof({prefix}{version}, {f.name}) == {f.offset} );\n')
+            out(f'C_ASSERT( sizeof({prefix}{version}().{f.name}) >= {f.size} );\n')
+        out(u'\n')
+
+    def write_converter(self, prefix):
+        version = all_versions[sdkver][self.name]
+        out(f'{self._abi}_{version}::operator {prefix}{version}() const\n')
+        out(u'{\n')
+        out(f'    {prefix}{version} ret;\n')
+        for field in self.fields:
+            out(f'    ret.{field.name} = this->{field.name};\n')
+        out(u'    return ret;\n')
+        out(u'}\n')
+
+    def needs_conversion(self, other):
+        if other.id in self._conv_cache:
+            return self._conv_cache[other.id]
+        self._conv_cache[other.id] = other._conv_cache[self.id] = True
+
+        if self.name in SIZED_STRUCTS and self.size != other.size:
+            return True
+        if len(self.fields) != len(other.fields):
+            return True
+        if any([a.offset != b.offset or a.needs_conversion(b)
+               for a, b in zip(self.fields, other.fields)]):
+            return True
+
+        self._conv_cache[other.id] = other._conv_cache[self.id] = False
+        return False
+
+    def get_children(self):
+        return self._cursor.get_children()
+
+
+class Union(Struct):
+    def __init__(self, sdkver, abi, cursor):
+        super().__init__(sdkver, abi, cursor)
+
+
+class Method:
+    def __init__(self, sdkver, abi, cursor, klass, index, override):
+        self._sdkver = sdkver
+        self._abi = abi
+
+        self._cursor = cursor
+        self._klass = klass
+        self._index = index
+        self._override = override
+
+        self.result_type = cursor.result_type
+        self.spelling = cursor.spelling
+
+    @property
+    def name(self):
+        if self._override > 1: return f'{self.spelling}_{self._override}'
+        return self.spelling
+
+    @property
+    def full_name(self):
+        return f'{self._klass.full_name}_{self.name}'
+
+    def get_arguments(self):
+        return self._cursor.get_arguments()
+
+    def write_params(self, out):
+        returns_record = self.result_type.get_canonical().kind == TypeKind.RECORD
+
+        ret = "*_ret" if returns_record else "_ret"
+        ret = f'{declspec(self.result_type, ret, "w_")}'
+
+        names = [p.spelling if p.spelling != "" else f'_{chr(0x61 + i)}'
+                 for i, p in enumerate(self.get_arguments())]
+        params = [declspec(p, names[i], "w_") for i, p in enumerate(self.get_arguments())]
+
+        if self.result_type.kind != TypeKind.VOID:
+            params = [ret] + params
+            names = ['_ret'] + names
+
+        params = ['void *linux_side'] + params
+        names = ['linux_side'] + names
+
+        out(f'struct {self.full_name}_params\n')
+        out(u'{\n')
+        for param in params:
+            out(f'    {param};\n')
+        out(u'};\n\n')
+
+    def get_children(self):
+        return self._cursor.get_children()
+
+
+class Destructor(Method):
+    def __init__(self, sdkver, abi, cursor, klass, index, override):
+        super().__init__(sdkver, abi, cursor, klass, index, override)
+
+    @property
+    def name(self):
+        if self._override > 1: return f'destructor_{self._override}'
+        return 'destructor'
+
+    def write_params(self, out):
+        pass
+
+
+class Class:
+    def __init__(self, sdkver, abi, cursor):
+        self._cursor = cursor
+        self._sdkver = sdkver
+        self._abi = abi
+        self._methods = None
+        self._decl_order = 0
+
+        self.name = cursor.spelling
+        self.filename = SDK_CLASSES.get(self.name, None)
+        versions = all_versions[sdkver]
+        self.version = versions.get(self.name, "")
+
+        self.type = self._cursor.type.get_canonical()
+        self.id = f'{abi}_{self.name}_{sdkver}'
+
+    @property
+    def methods(self):
+        if self._methods:
+            return self._methods
+
+        overrides = {}
+        is_method = lambda c: c.kind == CursorKind.CXX_METHOD and c.is_virtual_method()
+        in_vtable = lambda c: is_method(c) or c.kind == CursorKind.DESTRUCTOR
+
+        self._methods = []
+        for i, method in enumerate(filter(in_vtable, self._cursor.get_children())):
+            index, override = overrides.get(method.spelling, (i, 1))
+            overrides[method.spelling] = (index, override + 1)
+            if method.kind == CursorKind.DESTRUCTOR:
+                self._methods.append(Destructor(self._sdkver, self._abi, method, self, index, override))
+            else:
+                self._methods.append(Method(self._sdkver, self._abi, method, self, index, override))
+
+        return self._methods
+
+    @property
+    def full_name(self):
+        if len(self.version) == 0:
+            return self.name
+        return f'{self.name}_{self.version}'
+
+    @property
+    def order(self):
+        return self._decl_order
+
+    def set_used(self, order=-1):
+        if self._decl_order <= order:
+            return
+        self._decl_order = order
+
+    def needs_conversion(self, other):
+        return self._abi[0] != other._abi[0]
+
+    def __eq__(self, other):
+        return self._abi[0] == other._abi[0]
+
+    def write_definition(self, out, prefix):
+        out(f'struct {prefix}{self.full_name}\n')
+        out(u'{\n')
+        out(u'#ifdef __cplusplus\n')
+        for method in self.methods:
+            types = [declspec(p, "", prefix) for p in method.get_arguments()]
+            if type(method) is Destructor:
+                out(f'    virtual ~{prefix}{self.full_name}( {", ".join(types)} ) = 0;\n')
+            else:
+                method_name = f'{declspec(method.result_type, "", prefix)} {method.spelling}'
+                out(f'    virtual {method_name}( {", ".join(types)} ) = 0;\n')
+        out(u'#endif /* __cplusplus */\n')
+        out(u'};\n\n')
+
+    def get_children(self):
+        return self._cursor.get_children()
+
+
+def Record(sdkver, abi, cursor):
+    if cursor.type.get_declaration().kind == CursorKind.UNION_DECL:
+        return Union(sdkver, abi, cursor)
+
+    method_kinds = (CursorKind.CXX_METHOD, CursorKind.DESTRUCTOR)
+    is_method = lambda c: c.kind in method_kinds and c.is_virtual_method()
+    for _ in filter(is_method, cursor.get_children()):
+        return Class(sdkver, abi, cursor)
+
+    return Struct(sdkver, abi, cursor)
+
+
+def Type(decl, sdkver, abi):
+    name = strip_ns(canonical_typename(decl))
+    if name not in all_structs:
+        return BasicType(decl, abi)
+    return all_structs[name][sdkver][abi]
+
 
 def display_sdkver(s):
     if s.startswith("v"):
@@ -419,285 +600,308 @@ def display_sdkver(s):
 def strip_ns(name):
     return name.replace("vr::","")
 
-def get_path_converter(parent):
-    for conv in path_conversions:
-        if conv["parent_name"] in parent.spelling:
-            if None in conv["l2w_names"]:
-                return conv
-            if type(parent) == Type:
-                children = list(parent.get_fields())
-            else:
-                children = list(parent.get_children())
-            for child in children:
-                if child.spelling in conv["w2l_names"] or \
-                        child.spelling in conv["l2w_names"]:
-                    return conv
-    return None
 
-def handle_method(cfile, classname, winclassname, cppname, method, cpp, cpp_h, existing_methods, iface_version):
-    used_name = method.spelling
-    if used_name in existing_methods:
-        number = '2'
-        while used_name in existing_methods:
-            idx = existing_methods.index(used_name)
-            used_name = "%s_%s" % (method.spelling, number)
-            number = chr(ord(number) + 1)
-        existing_methods.insert(idx, used_name)
-    else:
-        existing_methods.append(used_name)
+def underlying_type(decl):
+    if type(decl) is Cursor:
+        decl = decl.type
+    decl = decl.get_canonical()
+    if decl.kind == TypeKind.LVALUEREFERENCE: return underlying_type(decl.get_pointee())
+    if decl.kind == TypeKind.CONSTANTARRAY: return underlying_type(decl.element_type)
+    if decl.kind == TypeKind.POINTER: return underlying_type(decl.get_pointee())
+    return decl
+
+
+def param_needs_conversion(decl):
+    decl = underlying_type(decl)
+    return decl.kind == TypeKind.RECORD and \
+           struct_needs_conversion(decl)
+
+
+def callconv(cursor, prefix):
+    if type(cursor) is not Cursor:
+        return ''
+    canon = cursor.type.get_canonical()
+    if canon.kind != TypeKind.POINTER:
+        return ''
+    canon = canon.get_pointee()
+    if canon.kind != TypeKind.FUNCTIONPROTO:
+        return ''
+    if cursor.type.kind == TypeKind.TYPEDEF:
+        cursor = cursor.type.get_declaration()
+
+    tokens = cursor.get_tokens()
+    while next(tokens).spelling != '(': pass
+    token = next(tokens).spelling.strip('_')
+    token = token.replace('*', 'cdecl')
+    token = token.replace('S_CALLTYPE', 'cdecl')
+    return f'{prefix[0].upper()}_{token.upper()} '
+
+
+def declspec_func(decl, name, prefix):
+    ret = declspec(decl.get_result(), "", prefix, False)
+    params = [declspec(a, "", prefix, False) for a in decl.argument_types()]
+    params = ", ".join(params) if len(params) else "void"
+    return f'{ret} ({name})({params})'
+
+
+def declspec(decl, name, prefix, wrapped=False):
+    call = callconv(decl, prefix)
+    if type(decl) is Cursor:
+        decl = decl.type
+    decl = decl.get_canonical()
+
+    const = 'const ' if decl.is_const_qualified() else ''
+    if decl.kind == TypeKind.FUNCTIONPROTO:
+        return declspec_func(decl, name, prefix)
+    if decl.kind in (TypeKind.POINTER, TypeKind.LVALUEREFERENCE):
+        decl = decl.get_pointee()
+        spec = declspec(decl, f"*{call}{const}{name}", prefix, False)
+        if wrapped:
+            return f'{prefix.upper()}PTR({spec}, {name})'
+        return spec
+    if decl.kind == TypeKind.CONSTANTARRAY:
+        decl, count = decl.element_type, decl.element_count
+        if wrapped:
+            spec = declspec(decl, const, prefix, False)
+            return f'{prefix.upper()}ARRAY({spec}, {count}, {name})'
+        return declspec(decl, f"({const}{name})[{count}]", prefix, False)
+
+    if len(name):
+        name = f' {name}'
+
+    if decl.kind in (TypeKind.UNEXPOSED, TypeKind.FUNCTIONPROTO):
+        return f'void{name}'
+    if decl.kind == TypeKind.ENUM:
+        return f'uint{decl.get_size() * 8}_t{name}'
+
+    type_name = decl.spelling
+    type_name = type_name.removeprefix("const ")
+    type_name = type_name.removeprefix("vr::")
+    if type_name.startswith(('IVR', 'ID3D')):
+        return f'{const}void /*{type_name}*/{name}'
+
+    if decl.kind == TypeKind.RECORD \
+       and type_name in all_versions[sdkver] \
+       and type_name not in EXEMPT_STRUCTS:
+        if type_name in unique_structs:
+            return f'{const}{all_versions[sdkver][type_name]}{name}'
+        return f'{const}{prefix}{all_versions[sdkver][type_name]}{name}'
+
+    real_name = canonical_typename(decl)
+    real_name = real_name.removeprefix("const ")
+    real_name = real_name.removeprefix("vr::")
+
+    if type_name in ('void', 'char', 'float', 'double'):
+        return f'{const}{type_name}{name}'
+    if type_name.startswith(('bool', 'int', 'long', 'short', 'signed')):
+        return f'{const}int{decl.get_size() * 8}_t{name}'
+    if type_name.startswith(('uint', 'unsigned')):
+        return f'{const}uint{decl.get_size() * 8}_t{name}'
+
+    return f'{const}{type_name}{name}'
+
+
+def handle_method_cpp(method, classname, out):
+    returns_void = method.result_type.kind == TypeKind.VOID
     returns_record = method.result_type.get_canonical().kind == TypeKind.RECORD
-    if returns_record:
-        parambytes = 8 #_this + return pointer
-    else:
-        parambytes = 4 #_this
-    for param in get_params(method):
-        parambytes += param.type.get_size()
-    cfile.write("DEFINE_THISCALL_WRAPPER(%s_%s, %s)\n" % (winclassname, used_name, parambytes))
-    cpp_h.write("extern ")
-    if strip_ns(method.result_type.spelling).startswith("IVR"):
-        cfile.write("win%s " % (strip_ns(method.result_type.spelling)))
-        cpp.write("void *")
-        cpp_h.write("void *")
+
+    names = [p.spelling if p.spelling != "" else f'_{chr(0x61 + i)}'
+             for i, p in enumerate(method.get_arguments())]
+
+    need_convert = {n: p for n, p in zip(names, method.get_arguments())
+                    if param_needs_conversion(p)}
+
+    names = ['linux_side'] + names
+
+    out(f'NTSTATUS {method.full_name}( void *args )\n')
+    out(u'{\n')
+    out(f'    struct {method.full_name}_params *params = (struct {method.full_name}_params *)args;\n')
+    out(f'    struct u_{klass.full_name} *iface = (struct u_{klass.full_name} *)params->linux_side;\n')
+
+    params = list(zip(names[1:], method.get_arguments()))
+    for i, (name, param) in enumerate(params[:-1]):
+        if underlying_type(param).kind != TypeKind.RECORD:
+            continue
+        next_name, next_param = params[i + 1]
+        if not any(w in next_name.lower() for w in ('count', 'len', 'size', 'num')):
+            continue
+        assert strip_ns(underlying_typename(param)) in SIZED_STRUCTS | EXEMPT_STRUCTS
+
+    for i, (name, param) in enumerate(params[1:]):
+        if underlying_type(param).kind != TypeKind.RECORD:
+            continue
+        prev_name, prev_param = params[i - 1]
+        if not any(w in prev_name.lower() for w in ('count', 'len', 'size', 'num')):
+            continue
+        if strip_ns(underlying_typename(param)) not in SIZED_STRUCTS | EXEMPT_STRUCTS:
+            print('Warning:', strip_ns(underlying_typename(param)), name, 'following', prev_name)
+
+    path_conv_wtou = PATH_CONV_METHODS_WTOU.get(f'{klass.name}_{method.spelling}', {})
+    for name in filter(lambda x: x in names, sorted(path_conv_wtou)):
+        out(f'    char *u_{name} = vrclient_dos_to_unix_path( params->{name} );\n')
+
+    need_output = {}
+
+    for name, param in sorted(need_convert.items()):
+        if param.type.kind != TypeKind.POINTER:
+            out(f'    {declspec(param, f"u_{name}", "u_")} = params->{name};\n')
+            continue
+
+        pointee = param.type.get_pointee()
+        if pointee.kind == TypeKind.POINTER:
+            need_output[name] = param
+            out(f'    {declspec(pointee, f"u_{name}", "u_")};\n')
+            continue
+
+        if not pointee.is_const_qualified():
+            need_output[name] = param
+
+        out(f'    {declspec(pointee, f"u_{name}", "u_").removeprefix("const ")};\n')
+        out(f'    if (params->{name}) u_{name} = *params->{name};\n')
+
+    size_fixup = {}
+    size_param = {}
+    size_fixup = {}
+    params = list(zip(names[1:], method.get_arguments()))
+    params += [(None, None)] # for next_name, next_param
+    for i, (name, param) in enumerate(params[:-1]):
+        real_type = underlying_type(param)
+        if strip_ns(real_type.spelling) not in STRUCTS_NEXT_IS_SIZE:
+            continue
+
+        next_name, next_param = params[i + 1]
+        if not next_param or next_param.type.spelling != "uint32_t":
+            size_param[name] = ', -1'
+        elif name in need_convert:
+            assert name not in STRUCTS_NEXT_IS_SIZE_UNHANDLED
+            out(f'    uint32_t u_{next_name} = params->{next_name} ? sizeof(u_{name}) : 0;\n')
+            size_param[name] = f', params->{next_name}'
+            size_fixup[next_name] = True
+
+    if returns_void:
+        out(u'    ')
     elif returns_record:
-        cfile.write("%s *" % strip_ns(method.result_type.spelling))
-        cpp.write("%s " % method.result_type.spelling)
-        cpp_h.write("%s " % strip_ns(method.result_type.spelling))
+        out(u'    *params->_ret = ')
     else:
-        cfile.write("%s " % strip_ns(method.result_type.spelling))
-        cpp.write("%s " % method.result_type.spelling)
-        cpp_h.write("%s " % strip_ns(method.result_type.spelling))
-    cfile.write('__thiscall %s_%s(%s *_this' % (winclassname, used_name, winclassname))
-    cpp.write("%s_%s(void *linux_side" % (cppname, used_name))
-    cpp_h.write("%s_%s(void *" % (cppname, used_name))
+        out(u'    params->_ret = ')
+
+    def param_call(name, param):
+        pfx = '&' if param.type.kind == TypeKind.POINTER else ''
+        if name in size_fixup: return f"u_{name}"
+        if name in path_conv_wtou: return f"u_{name}"
+        if name in need_convert: return f"params->{name} ? {pfx}u_{name} : nullptr"
+        return f'params->{name}'
+
+    params = [param_call(n, p) for n, p in zip(names[1:], method.get_arguments())]
+    out(f'iface->{method.spelling}( {", ".join(params)} );\n')
+
+    for name, param in sorted(need_output.items()):
+        out(f'    if (params->{name}) *params->{name} = u_{name};\n')
+
+    path_conv_utow = PATH_CONV_METHODS_UTOW.get(f'{klass.name}_{method.spelling}', {})
+
+    for name, conv in filter(lambda x: x[0] in names, path_conv_utow.items()):
+        out(u'    ')
+        if "ret_size" in path_conv_utow:
+            out(u'params->_ret = ')
+        out(f'vrclient_unix_path_to_dos_path( params->_ret, params->{name}, params->{name}, params->{conv["len"]} );\n')
+
+    for name in filter(lambda x: x in names, sorted(path_conv_wtou)):
+        out(f'    vrclient_free_path( u_{name} );\n')
+
+    out(u'    return 0;\n')
+    out(u'}\n\n')
+
+
+def handle_thiscall_wrapper(klass, method, out):
+    returns_record = method.result_type.get_canonical().kind == TypeKind.RECORD
+
+    def param_stack_size(param):
+        if param.type.kind == TypeKind.LVALUEREFERENCE: return 4
+        return ((param.type.get_size() + 3) // 4) * 4
+
+    size = 4 + sum(param_stack_size(p) for p in method.get_arguments())
+    if returns_record: size += 4
+
+    name = f'win{klass.full_name}_{method.name}'
+    out(f'DEFINE_THISCALL_WRAPPER({name}, {size})\n')
+
+
+def handle_method_c(klass, method, winclassname, out):
+    returns_void = method.result_type.kind == TypeKind.VOID
+    returns_record = method.result_type.get_canonical().kind == TypeKind.RECORD
+
+    ret = "*" if returns_record else ""
+    ret = f'{declspec(method.result_type, ret, "w_")} '
+
+    names = [p.spelling if p.spelling != "" else f'_{chr(0x61 + i)}'
+             for i, p in enumerate(method.get_arguments())]
+    params = [declspec(p, names[i], "w_") for i, p in enumerate(method.get_arguments())]
+
+    need_convert = {n: p for n, p in zip(names, method.get_arguments())
+                    if param_needs_conversion(p)}
+
     if returns_record:
-        cfile.write(", %s *_r" % strip_ns(method.result_type.spelling))
-    unnamed = 'a'
-    do_lin_to_win = None
-    do_win_to_lin = None
-    do_size_fixup = None
-    do_wrap = None
-    do_unwrap = None
-    need_convert = []
-    for param in get_params(method):
-        if param.type.kind == TypeKind.POINTER and \
-                param.type.get_pointee().kind == TypeKind.UNEXPOSED:
-            #unspecified function pointer
-            typename = "void *"
-        else:
-            typename = param.type.spelling.split("::")[-1].replace("&", "*")
-            real_type = param.type;
-            while real_type.kind == TypeKind.POINTER:
-                real_type = real_type.get_pointee()
-            if param.type.kind == TypeKind.POINTER:
-                if strip_ns(param.type.get_pointee().get_canonical().spelling) in system_structs:
-                    do_unwrap = (strip_ns(param.type.get_pointee().get_canonical().spelling), param.spelling)
-                    typename = "win" + do_unwrap[0] + "_" + display_sdkver(sdkver) + " *"
-                elif param.type.get_pointee().get_canonical().kind == TypeKind.POINTER and \
-                        strip_ns(param.type.get_pointee().get_pointee().get_canonical().spelling) in system_structs:
-                    do_wrap = (strip_ns(param.type.get_pointee().get_pointee().get_canonical().spelling), param.spelling)
-                    typename = "win" + do_wrap[0] + "_" + display_sdkver(sdkver) + " **"
-                elif real_type.get_canonical().kind == TypeKind.RECORD and \
-                        struct_needs_conversion(real_type.get_canonical()):
-                    do_win_to_lin = (strip_const(strip_ns(real_type.get_canonical().spelling)), param.spelling)
-                    if not real_type.is_const_qualified():
-                        do_lin_to_win = (strip_const(strip_ns(real_type.get_canonical().spelling)), param.spelling)
-                    #preserve pointers
-                    typename = typename.replace(strip_ns(real_type.spelling), "win%s_%s" % (strip_ns(real_type.get_canonical().spelling), display_sdkver(sdkver)))
-                elif real_type.get_canonical().kind == TypeKind.RECORD and \
-                        strip_ns(real_type.spelling) in next_is_size_structs and \
-                        struct_needs_size_adjustment(real_type.get_canonical()):
-                    do_size_fixup = (strip_const(strip_ns(real_type.get_canonical().spelling)), param.spelling)
+        params = [f'{declspec(method.result_type, "*_ret", "w_")}'] + params
+        names = ['_ret'] + names
 
-        if param.spelling == "":
-            cfile.write(", %s _%s" % (typename, unnamed))
-            cpp.write(", %s _%s" % (typename, unnamed))
-            cpp_h.write(", %s" % typename)
-            unnamed = chr(ord(unnamed) + 1)
-        else:
-            cfile.write(", %s %s" % (typename, param.spelling))
-            cpp.write(", %s %s" % (typename, param.spelling))
-            cpp_h.write(", %s" % (typename))
-    cfile.write(")\n{\n")
-    cpp.write(")\n{\n")
-    cpp_h.write(");\n")
+    params = ['struct w_steam_iface *_this'] + params
+    names = ['_this'] + names
 
-    path_conv = get_path_converter(method)
+    if is_manual_method(klass, method, 'w'):
+        out(f'extern {ret}__thiscall {winclassname}_{method.name}({", ".join(params)});\n\n')
+        return
 
-    if path_conv:
-        for i in range(len(path_conv["w2l_names"])):
-            if path_conv["w2l_arrays"][i]:
-                cfile.write("    const char **lin_%s = vrclient_dos_to_unix_stringlist(%s);\n" % (path_conv["w2l_names"][i], path_conv["w2l_names"][i]))
-                # TODO
-                pass
-            else:
-                cfile.write("    char lin_%s[PATH_MAX];\n" % path_conv["w2l_names"][i])
-                cfile.write("    vrclient_dos_path_to_unix_path(%s, lin_%s);\n" % (path_conv["w2l_names"][i], path_conv["w2l_names"][i]))
-        if None in path_conv["l2w_names"]:
-            cfile.write("    const char *path_result;\n")
-        elif path_conv["return_is_size"]:
-            cfile.write("    uint32_t path_result;\n")
-        elif len(path_conv["l2w_names"]) > 0:
-            cfile.write("    %s path_result;\n" % method.result_type.spelling)
+    out(f'{ret}__thiscall {winclassname}_{method.name}({", ".join(params)})\n')
+    out(u'{\n')
 
-    if do_lin_to_win or do_win_to_lin:
-        if do_lin_to_win:
-            cpp.write("    %s lin;\n" % do_lin_to_win[0])
-        else:
-            cpp.write("    %s lin;\n" % do_win_to_lin[0])
-        if not method.result_type.kind == TypeKind.VOID:
-            cpp.write("    %s _ret;\n" % method.result_type.spelling)
+    names = names[2:] if returns_record else names[1:]
+    params = list(zip(names, method.get_arguments()))
+    params += [(None, None)]
+    param_sizes = {}
 
-    if do_wrap:
-        cpp.write("    %s *lin;\n" % do_wrap[0])
-        if not method.result_type.kind == TypeKind.VOID:
-            cpp.write("    %s _ret;\n" % method.result_type.spelling)
+    for i, (name, param) in enumerate(params[:-1]):
+        if name not in need_convert:
+            continue
+        real_type = underlying_type(param)
+        if strip_ns(real_type.spelling) not in STRUCTS_NEXT_IS_SIZE:
+            continue
+        assert name not in STRUCTS_IS_INPUT_ARRAY
+        assert name not in STRUCTS_NEXT_IS_SIZE_UNHANDLED
 
-    cfile.write("    TRACE(\"%p\\n\", _this);\n")
+        next_name, next_param = params[i + 1]
+        if next_param and next_param.type.spelling == "uint32_t":
+            out(f'    {declspec(param.type.get_pointee(), f"w_{name}", "w_")};\n')
+            param_sizes[name] = next_name
 
-    if do_win_to_lin:
-        #XXX we should pass the struct size here
-        cpp.write("    if(%s)\n" % do_win_to_lin[1])
-        cpp.write("        struct_%s_%s_win_to_lin(%s, &lin);\n" % (strip_ns(do_win_to_lin[0]), display_sdkver(sdkver), do_win_to_lin[1]))
-
-    if method.result_type.kind == TypeKind.VOID:
-        cfile.write("    ")
-        cpp.write("    ")
-    elif path_conv and (len(path_conv["l2w_names"]) > 0 or path_conv["return_is_size"]):
-        cfile.write("    path_result = ")
-        cpp.write("    return ")
-    elif returns_record:
-        cfile.write("    *_r = ")
-        cpp.write("    return ")
-    elif do_lin_to_win or do_win_to_lin:
-        cfile.write("    return ")
-        cpp.write("    _ret = ")
-    elif do_wrap:
-        cfile.write("    return ")
-        cpp.write("    _ret = ")
-    else:
-        cfile.write("    return ")
-        cpp.write("    return ")
-
-    should_gen_wrapper = strip_ns(method.result_type.spelling).startswith("IVR")
-    if should_gen_wrapper:
-        cfile.write("create_win_interface(pchNameAndVersion,\n        ")
-
-    is_method_overridden = False
-    for classname_pattern, methodname, override_generator in method_overrides:
-        if used_name == methodname and classname_pattern in classname:
-            fn_name = override_generator(cppname, method)
-            if fn_name:
-                cfile.write("%s(%s_%s, _this->linux_side" % (fn_name, cppname, used_name))
-                is_method_overridden = True
-                break
-    else:
-        cfile.write("%s_%s(_this->linux_side" % (cppname, used_name))
-
-    cpp.write("((%s*)linux_side)->%s(" % (classname, method.spelling))
-    unnamed = 'a'
-    first = True
-    next_is_size = False
-    next_is_size_no_conv = False
-    convert_size_param = ""
-    for param in get_params(method):
-        if not first:
-            cpp.write(", ")
-        else:
-            first = False
-        if param.spelling == "":
-            cfile.write(", _%s" % unnamed)
-            cpp.write("(%s)_%s" % (param.type.spelling, unnamed))
-            unnamed = chr(ord(unnamed) + 1)
-        else:
-            if do_lin_to_win and do_lin_to_win[1] == param.spelling or \
-                    do_win_to_lin and do_win_to_lin[1] == param.spelling or \
-                    do_wrap and do_wrap[1] == param.spelling:
-                cfile.write(", %s" % param.spelling)
-                cpp.write("%s ? &lin : nullptr" % param.spelling)
-                if do_win_to_lin:
-                    assert(not do_win_to_lin[0] in unhandled_next_is_size_structs)
-                    if do_win_to_lin[0] in next_is_size_structs:
-                        next_is_size = True
-            elif do_unwrap and do_unwrap[1] == param.spelling:
-                cfile.write(", %s" % param.spelling)
-                cpp.write("struct_%s_%s_unwrap(%s)" % (strip_ns(do_unwrap[0]), display_sdkver(sdkver), do_unwrap[1]))
-            elif path_conv and param.spelling in path_conv["w2l_names"]:
-                cfile.write(", %s ? lin_%s : NULL" % (param.spelling, param.spelling))
-                cpp.write("(%s)%s" % (param.type.spelling, param.spelling))
-            elif do_size_fixup and do_size_fixup[1] == param.spelling:
-                next_is_size = True
-                next_is_size_no_conv = True
-                cfile.write(", %s" % param.spelling)
-                cpp.write("(%s)%s" % (param.type.spelling, param.spelling))
-            elif next_is_size:
-                cfile.write(", %s" % param.spelling)
-                next_is_size = False
-                if next_is_size_no_conv and param.type.spelling == "uint32_t":
-                    cpp.write("std::min(%s, (uint32_t)sizeof(vr::%s))" % (param.spelling, do_size_fixup[0]))
-                    convert_size_param = ", " + param.spelling
-                elif param.type.spelling == "uint32_t":
-                    cpp.write("%s ? sizeof(lin) : 0" % param.spelling)
-                    convert_size_param = ", " + param.spelling
-                else:
-                    cpp.write("(%s)%s" % (param.type.spelling, param.spelling))
-                    convert_size_param = ", -1"
-                next_is_size_no_conv = False
-            elif "&" in param.type.spelling:
-                cfile.write(", %s" % param.spelling)
-                cpp.write("*%s" % param.spelling)
-            else:
-                cfile.write(", %s" % param.spelling)
-                cpp.write("(%s)%s" % (param.type.spelling, param.spelling))
-    if should_gen_wrapper:
-        cfile.write(")")
-    if is_method_overridden:
-        cfile.write(", %s" % iface_version[iface_version.find("_") + 1:].lstrip("0"))
-        for classname_pattern, user_data_type, _ in method_overrides_data:
-            if classname_pattern in classname:
-                cfile.write(", &_this->user_data")
-                break
-    cfile.write(");\n")
-    cpp.write(");\n")
+    out(f'    struct {method.full_name}_params params =\n')
+    out(u'    {\n')
+    out(u'        .linux_side = _this->u_iface,\n')
     if returns_record:
-        cfile.write("    return _r;\n")
-    if path_conv and len(path_conv["l2w_names"]) > 0:
-        for i in range(len(path_conv["l2w_names"])):
-            assert(path_conv["l2w_names"][i]) #otherwise, no name means string is in return value. needs special handling.
-            cfile.write("    ")
-            if path_conv["return_is_size"]:
-                cfile.write("path_result = ")
-            cfile.write("vrclient_unix_path_to_dos_path(path_result, %s, %s, %s);\n" % (path_conv["l2w_names"][i], path_conv["l2w_names"][i], path_conv["l2w_lens"][i]))
-        cfile.write("    return path_result;\n")
-    if path_conv:
-        for i in range(len(path_conv["w2l_names"])):
-            if path_conv["w2l_arrays"][i]:
-                cfile.write("    vrclient_free_stringlist(lin_%s);\n" % path_conv["w2l_names"][i])
-    if do_lin_to_win:
-        if next_is_size and not convert_size_param:
-            convert_size_param = ", -1"
-        cpp.write("    if(%s)\n" % do_lin_to_win[1])
-        cpp.write("        struct_%s_%s_lin_to_win(&lin, %s%s);\n" % (strip_ns(do_lin_to_win[0]), display_sdkver(sdkver), do_lin_to_win[1], convert_size_param))
-    if do_lin_to_win or do_win_to_lin:
-        if not method.result_type.kind == TypeKind.VOID:
-            cpp.write("    return _ret;\n")
-    if do_wrap and not method.result_type.kind == TypeKind.VOID:
-            cpp.write("    if(_ret == 0)\n")
-            cpp.write("        *%s = struct_%s_%s_wrap(lin);\n" % (do_wrap[1], strip_ns(do_wrap[0]), display_sdkver(sdkver)))
-            cpp.write("    return _ret;\n")
-    cfile.write("}\n\n")
-    cpp.write("}\n\n")
+        out(u'        ._ret = _ret,\n')
+    for name, param in params[:-1]:
+        if name in param_sizes:
+            out(f'        .{name} = {name} ? &w_{name} : NULL,\n')
+        else:
+            out(f'        .{name} = {name},\n')
+    out(u'    };\n')
 
-def get_iface_version(classname):
-    if classname in iface_versions.keys():
-        ver = iface_versions[classname]
-    else:
-        ver = "UNVERSIONED"
-    if classname in class_versions.keys() and ver in class_versions[classname]:
-        return (ver, True)
-    if not classname in class_versions.keys():
-        class_versions[classname] = []
-    class_versions[classname].append(ver)
-    return (ver, False)
+    out(u'    TRACE("%p\\n", _this);\n')
+
+    if 'eTextureType' in names:
+        out(u'    if (eTextureType == TextureType_DirectX) FIXME( "Not implemented Direct3D API!\\n" );\n')
+
+    for name, size in param_sizes.items():
+        out(f'    {size} = min( {size}, sizeof(w_{name}) );\n')
+        out(f'    if ({name}) memcpy( &w_{name}, {name}, {size} );\n')
+    out(f'    VRCLIENT_CALL( {method.full_name}, &params );\n')
+    for name, size in param_sizes.items():
+        out(f'    if ({name}) memcpy( {name}, &w_{name}, {size} );\n')
+
+    if not returns_void:
+        out(u'    return params._ret;\n')
+    out(u'}\n\n')
+
 
 max_c_api_param_count = 0
 
@@ -705,7 +909,7 @@ def get_capi_thunk_params(method):
     def toBOOL(x):
         return "TRUE" if x else "FALSE"
     returns_record = method.result_type.get_canonical().kind == TypeKind.RECORD
-    param_types = [x.type for x in get_params(method)]
+    param_types = [x.type for x in method.get_arguments()]
     if returns_record:
         param_types.insert(0, method.result_type)
     param_count = len(param_types)
@@ -713,366 +917,142 @@ def get_capi_thunk_params(method):
     is_4th_float = param_count >= 4 and param_types[3].spelling == "float"
     return "%s, %s, %s" % (param_count, toBOOL(has_float_params), toBOOL(is_4th_float))
 
-def handle_class(sdkver, classnode):
-    print("handle_class: " + classnode.displayname)
-    children = list(classnode.get_children())
-    if len(children) == 0:
-        return
-    (iface_version, already_generated) = get_iface_version(classnode.spelling)
-    if already_generated:
-        return
-    winname = "win%s" % classnode.spelling
-    cppname = "cpp%s_%s" % (classnode.spelling, iface_version)
 
-    file_exists = os.path.isfile("vrclient_x64/%s.c" % winname)
-    cfile = open("vrclient_x64/%s.c" % winname, "a")
-    if not file_exists:
-        cfile.write("""/* This file is auto-generated, do not edit. */
-#include <stdarg.h>
-#include <stdint.h>
+def handle_class(klass):
+    cppname = f"cpp{klass.full_name}"
 
-#include "windef.h"
-#include "winbase.h"
-#include "wine/debug.h"
+    with open(f"{cppname}.cpp", "w") as file:
+        out = file.write
 
-#include "cxx.h"
+        out(u'/* This file is auto-generated, do not edit. */\n')
+        out(u'#include "unix_private.h"\n\n')
 
-#include "vrclient_defs.h"
+        for method in klass.methods:
+            if type(method) is Destructor:
+                continue
+            if is_manual_method(klass, method, "u"):
+                continue
+            handle_method_cpp(method, klass.name, out)
 
-#include "vrclient_private.h"
+    winclassname = f'win{klass.full_name}'
+    with open(f'win{klass.name}.c', 'a') as file:
+        out = file.write
 
-#include "struct_converters.h"
+        for method in klass.methods:
+            handle_thiscall_wrapper(klass, method, out)
+        out('\n')
 
-#include "flatapi.h"
+        for method in klass.methods:
+            if type(method) is Destructor:
+                continue
+            handle_method_c(klass, method, winclassname, out)
 
-WINE_DEFAULT_DEBUG_CHANNEL(vrclient);
+        out(f'extern vtable_ptr {winclassname}_vtable;\n')
+        out(u'\n')
+        out(f'DEFINE_RTTI_DATA0({winclassname}, 0, \".?AV{klass.name}@@\")\n')
+        out(u'\n')
+        out(f'__ASM_BLOCK_BEGIN({winclassname}_vtables)\n')
+        out(f'    __ASM_VTABLE({winclassname},\n')
+        for method in sorted(klass.methods, key=lambda x: (x._index, -x._override)):
+            out(f'        VTABLE_ADD_FUNC({winclassname}_{method.name})\n')
+        out(u'    );\n')
+        out(u'__ASM_BLOCK_END\n')
+        out(u'\n')
+        out(f'struct w_steam_iface *create_{winclassname}(void *u_iface)\n')
+        out(u'{\n')
+        out(u'    struct w_steam_iface *r = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*r));\n')
+        out(u'    TRACE("-> %p\\n", r);\n')
+        out(f'    r->vtable = &{winclassname}_vtable;\n')
+        out(u'    r->u_iface = u_iface;\n')
+        out(u'    return r;\n')
+        out(u'}\n\n')
+        out(f'void destroy_{winclassname}(struct w_steam_iface *object)\n')
+        out(u'{\n')
+        out(u'    TRACE("%p\\n", object);\n')
+        out(u'    HeapFree(GetProcessHeap(), 0, object);\n')
+        out(u'}\n\n')
 
-""")
+        # flat (FnTable) API
+        out(f'struct w_steam_iface *create_{winclassname}_FnTable(void *u_iface)\n')
+        out(u'{\n')
+        out(u'    struct w_steam_iface *r = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(*r));\n')
+        out(f'    struct thunk *thunks = alloc_thunks({len(klass.methods)});\n')
+        out(f'    struct thunk **vtable = HeapAlloc(GetProcessHeap(), 0, {len(klass.methods)} * sizeof(*vtable));\n')
+        out(u'    int i;\n\n')
+        out(u'    TRACE("-> %p, vtable %p, thunks %p\\n", r, vtable, thunks);\n')
+        for i, method in enumerate(klass.methods):
+            thunk_params = get_capi_thunk_params(method)
+            arguments = list(method.get_arguments())
+            global max_c_api_param_count
+            max_c_api_param_count = max(len(arguments), max_c_api_param_count)
+            out(f'    init_thunk(&thunks[{i}], r, {winclassname}_{method.name}, {thunk_params});\n')
+        out(f'    for (i = 0; i < {len(klass.methods)}; i++)\n')
+        out(u'        vtable[i] = &thunks[i];\n')
+        out(u'    r->u_iface = u_iface;\n')
+        out(u'    r->vtable = (void *)vtable;\n')
+        out(u'    return r;\n')
+        out(u'}\n\n')
+        out(f'void destroy_{winclassname}_FnTable(struct w_steam_iface *object)\n')
+        out(u'{\n')
+        out(u'    TRACE("%p\\n", object);\n')
+        out(u'    VirtualFree(object->vtable[0], 0, MEM_RELEASE);\n')
+        out(u'    HeapFree(GetProcessHeap(), 0, object->vtable);\n')
+        out(u'    HeapFree(GetProcessHeap(), 0, object);\n')
+        out(u'}\n\n')
 
-    cpp = open("vrclient_x64/%s.cpp" % cppname, "w")
-    cpp.write("#include \"vrclient_private.h\"\n")
-    cpp.write("#include \"vrclient_defs.h\"\n")
-    if os.path.isfile("openvr_%s/ivrclientcore.h" % sdkver):
-        cpp.write("#include \"openvr_%s/ivrclientcore.h\"\n" % sdkver)
-    else:
-        cpp.write("#include \"openvr_%s/openvr.h\"\n" % sdkver)
-    cpp.write("using namespace vr;\n")
-    cpp.write("extern \"C\" {\n")
-    cpp.write("#include \"struct_converters.h\"\n")
-    cpp.write("}\n")
-    cpp.write("#include \"%s.h\"\n" % cppname)
-    cpp.write("#ifdef __cplusplus\nextern \"C\" {\n#endif\n")
 
-    cpp_h = open("vrclient_x64/%s.h" % cppname, "w")
-    cpp_h.write("#ifdef __cplusplus\nextern \"C\" {\n#endif\n")
+def canonical_typename(cursor):
+    if type(cursor) in (Cursor, Struct):
+        return canonical_typename(cursor.type)
 
-    winclassname = "win%s_%s" % (classnode.spelling, iface_version)
-    cfile.write("#include \"%s.h\"\n\n" % cppname)
-    cfile.write("typedef struct __%s {\n" % winclassname)
-    cfile.write("    vtable_ptr *vtable;\n") # make sure to keep this first (flat API depends on it)
-    cfile.write("    void *linux_side;\n")
-    for classname_pattern, user_data_type, _ in method_overrides_data:
-        if classname_pattern in classnode.spelling:
-            cfile.write("    %s user_data;\n" % user_data_type)
-            break
-    cfile.write("} %s;\n\n" % winclassname)
-    methods = []
-    method_names = []
-    for child in children:
-        if child.kind == CursorKind.CXX_METHOD:
-            handle_method(cfile, classnode.spelling, winclassname, cppname, child, cpp, cpp_h, method_names, iface_version)
-            methods.append(child)
+    name = cursor.get_canonical().spelling
+    return name.removeprefix("const ")
 
-    cfile.write("extern vtable_ptr %s_vtable;\n\n" % winclassname)
-    cfile.write("#ifndef __GNUC__\n")
-    cfile.write("void __asm_dummy_vtables(void) {\n")
-    cfile.write("#endif\n")
-    cfile.write("    __ASM_VTABLE(%s,\n" % winclassname)
-    for method in method_names:
-        cfile.write("        VTABLE_ADD_FUNC(%s_%s)\n" % (winclassname, method))
-    cfile.write("    );\n")
-    cfile.write("#ifndef __GNUC__\n")
-    cfile.write("}\n")
-    cfile.write("#endif\n\n")
-    cfile.write("%s *create_%s(void *linux_side)\n{\n" % (winclassname, winclassname))
-    cfile.write("    %s *r = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(%s));\n" % (winclassname, winclassname))
-    cfile.write("    TRACE(\"-> %p\\n\", r);\n")
-    cfile.write("    r->vtable = &%s_vtable;\n" % winclassname)
-    cfile.write("    r->linux_side = linux_side;\n")
-    cfile.write("    return r;\n}\n\n")
-    cfile.write("void destroy_%s(void *object)\n{\n" % winclassname)
-    cfile.write("    TRACE(\"%p\\n\", object);\n")
-    for classname_pattern, user_data_type, user_data_destructor in method_overrides_data:
-        if user_data_destructor and classname_pattern in classnode.spelling:
-            cfile.write("    struct __%s *win_object = object;\n" % winclassname)
-            cfile.write("    %s(&win_object->user_data);\n" % user_data_destructor)
-            break
-    cfile.write("    HeapFree(GetProcessHeap(), 0, object);\n}\n\n")
 
-    # flat (FnTable) API
-    cfile.write("%s *create_%s_FnTable(void *linux_side)\n{\n" % (winclassname, winclassname))
-    cfile.write("    %s *r = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(%s));\n" % (winclassname, winclassname))
-    cfile.write("    struct thunk *thunks = alloc_thunks(%d);\n" % len(methods))
-    cfile.write("    struct thunk **vtable = HeapAlloc(GetProcessHeap(), 0, %d * sizeof(*vtable));\n" % len(methods))
-    cfile.write("    int i;\n\n")
-    cfile.write("    TRACE(\"-> %p, vtable %p, thunks %p\\n\", r, vtable, thunks);\n")
-    for i in range(len(methods)):
-        thunk_params = get_capi_thunk_params(methods[i])
-        global max_c_api_param_count
-        max_c_api_param_count = max(len(get_params(methods[i])), max_c_api_param_count)
-        cfile.write("    init_thunk(&thunks[%d], r, %s_%s, %s);\n" % (i, winclassname, method_names[i], thunk_params))
-    cfile.write("    for (i = 0; i < %d; i++)\n" % len(methods))
-    cfile.write("        vtable[i] = &thunks[i];\n")
-    cfile.write("    r->linux_side = linux_side;\n")
-    cfile.write("    r->vtable = (void *)vtable;\n")
-    cfile.write("    return r;\n}\n\n")
-    cfile.write("void destroy_%s_FnTable(void *object)\n{\n" % winclassname)
-    cfile.write("    %s *win_object = object;\n" % winclassname)
-    cfile.write("    TRACE(\"%p\\n\", win_object);\n")
-    for classname_pattern, user_data_type, user_data_destructor in method_overrides_data:
-        if user_data_destructor and classname_pattern in classnode.spelling:
-            cfile.write("    %s(&win_object->user_data);\n" % user_data_destructor)
-            break
-    cfile.write("    VirtualFree(win_object->vtable[0], 0, MEM_RELEASE);\n")
-    cfile.write("    HeapFree(GetProcessHeap(), 0, win_object->vtable);\n")
-    cfile.write("    HeapFree(GetProcessHeap(), 0, win_object);\n}\n\n")
+def underlying_typename(decl):
+    return canonical_typename(underlying_type(decl))
 
-    cpp.write("#ifdef __cplusplus\n}\n#endif\n")
-    cpp_h.write("#ifdef __cplusplus\n}\n#endif\n")
 
-    constructors = open("vrclient_x64/win_constructors.h", "a")
-    constructors.write("extern void *create_%s(void *);\n" % winclassname)
-    constructors.write("extern void *create_%s_FnTable(void *);\n" % winclassname)
+def find_struct_abis(name):
+    name = strip_ns(name)
+    if not name in all_structs:
+        return None
+    structs = all_structs[name]
+    if not sdkver in structs:
+        return None
+    return structs[sdkver]
 
-    destructors = open("vrclient_x64/win_destructors.h", "a")
-    destructors.write("extern void destroy_%s(void *);\n" % winclassname)
-    destructors.write("extern void destroy_%s_FnTable(void *);\n" % winclassname)
-
-    constructors = open("vrclient_x64/win_constructors_table.dat", "a")
-    constructors.write("    {\"%s\", &create_%s, &destroy_%s},\n" % (iface_version, winclassname, winclassname))
-    constructors.write("    {\"FnTable:%s\", &create_%s_FnTable, &destroy_%s_FnTable},\n" % (iface_version, winclassname, winclassname))
-    if iface_version in aliases.keys():
-        for alias in aliases[iface_version]:
-            constructors.write("    {\"%s\", &create_%s, &destroy_%s}, /* alias */\n" % (alias, winclassname, winclassname))
-            constructors.write("    {\"FnTable:%s\", &create_%s_FnTable, &destroy_%s_FnTable},\n" % (alias, winclassname, winclassname))
-
-    generate_c_api_thunk_tests(winclassname, methods, method_names)
-
-def strip_const(typename):
-    return typename.replace("const ", "", 1)
-
-windows_structs32 = {}
-def find_windows_struct(struct):
-    return windows_structs32.get(strip_const(struct.spelling), None)
-
-windows_structs64 = {}
-def find_windows64_struct(struct):
-    return windows_structs64.get(strip_const(struct.spelling), None)
-
-linux_structs64 = {}
-def find_linux64_struct(struct):
-    return linux_structs64.get(strip_const(struct.spelling), None)
-
-def struct_needs_conversion_nocache(struct):
-#    if strip_const(struct.spelling) in exempt_structs:
-#        return False
-#    if strip_const(struct.spelling) in manually_handled_structs:
-#        return True
-
-    needs_size_adjustment = False
-
-    #check 32-bit compat
-    windows_struct = find_windows_struct(struct)
-    assert(not windows_struct is None) #must find windows_struct
-    for field in struct.get_fields():
-        if struct.get_offset(field.spelling) != windows_struct.get_offset(field.spelling):
-            return True, False
-        if field.type.get_canonical().kind == TypeKind.RECORD and \
-                struct_needs_conversion(field.type.get_canonical()):
-            return True, False
-
-    assert(struct.get_size() <= windows_struct.get_size())
-    if struct.get_size() < windows_struct.get_size():
-        needs_size_adjustment = True
-
-    #check 64-bit compat
-    windows_struct = find_windows64_struct(struct)
-    assert(not windows_struct is None) #must find windows_struct
-    lin64_struct = find_linux64_struct(struct)
-    assert(not lin64_struct is None) #must find lin64_struct
-    for field in lin64_struct.get_fields():
-        if lin64_struct.get_offset(field.spelling) != windows_struct.get_offset(field.spelling):
-            return True, False
-        if field.type.get_canonical().kind == TypeKind.RECORD and \
-                struct_needs_conversion(field.type.get_canonical()):
-            return True, False
-
-    assert(lin64_struct.get_size() <= windows_struct.get_size())
-    if lin64_struct.get_size() < windows_struct.get_size():
-        needs_size_adjustment = True
-
-    return False, needs_size_adjustment
 
 def struct_needs_conversion(struct):
-    if not sdkver in struct_conversion_cache:
-        struct_conversion_cache[sdkver] = {}
-        struct_needs_size_adjustment_cache[sdkver] = {}
+    name = canonical_typename(struct)
 
-    if not strip_const(struct.spelling) in struct_conversion_cache[sdkver]:
-        struct_conversion_cache[sdkver][strip_const(struct.spelling)], \
-                struct_needs_size_adjustment_cache[sdkver][strip_const(struct.spelling)] = \
-                struct_needs_conversion_nocache(struct)
+    abis = find_struct_abis(name)
+    if abis is None:
+        return False
+    if abis['w32'].needs_conversion(abis['u32']):
+        return True
+    if abis['w64'].needs_conversion(abis['u64']):
+        return True
 
-    return struct_conversion_cache[sdkver][strip_const(struct.spelling)]
+    assert abis['u32'].size <= abis['w32'].size
+    if abis['u32'].size < abis['w32'].size:
+        return False
+    assert abis['u64'].size <= abis['w64'].size
+    if abis['u64'].size < abis['w64'].size:
+        return False
 
-def struct_needs_size_adjustment(struct):
-    return not struct_needs_conversion(struct) and struct_needs_size_adjustment_cache[sdkver][strip_const(struct.spelling)]
+    return False
+
 
 def get_field_attribute_str(field):
     ftype = field.type.get_canonical()
     if ftype.kind != TypeKind.RECORD:
         return ""
-    win_struct = find_windows_struct(ftype)
-    align = win_struct.get_align()
-    return " __attribute__((aligned(" + str(align) + ")))"
-
-generated_struct_handlers = []
-cpp_files_need_close_brace = []
-
-LIN_TO_WIN=1
-WIN_TO_LIN=2
-WRAPPERS=3
-
-#because of struct packing differences between win32 and linux, we
-#need to convert these structs from their linux layout to the win32
-#layout.
-def handle_struct(sdkver, struct):
-    handler_name = "%s_%s" % (struct.displayname, display_sdkver(sdkver))
-
-    if handler_name in generated_struct_handlers:
-        # we already have a handler for the struct struct of this size
-        return
-
-    which = set()
-
-    if struct_needs_conversion(struct.type.get_canonical()):
-        which.add(LIN_TO_WIN)
-        which.add(WIN_TO_LIN)
-
-    if strip_ns(struct.displayname) in system_structs:
-        which.add(WRAPPERS)
-
-    if len(which) == 0:
-        return
-
-    filename_base = "struct_converters_%s" % display_sdkver(sdkver)
-    cppname = "vrclient_x64/%s.cpp" % filename_base
-    file_exists = os.path.isfile(cppname)
-    cppfile = open(cppname, "a")
-    if not file_exists:
-        cppfile.write("#include <stdlib.h>\n");
-        cppfile.write("#include <string.h>\n");
-        cppfile.write("#include \"vrclient_private.h\"\n")
-        cppfile.write("#include \"vrclient_defs.h\"\n")
-        cppfile.write("#include \"openvr_%s/openvr.h\"\n" % sdkver)
-        cppfile.write("using namespace vr;\n")
-        cppfile.write("extern \"C\" {\n")
-        cppfile.write("#include \"struct_converters.h\"\n")
-        cpp_files_need_close_brace.append(cppname)
-
-    hfile = open("vrclient_x64/struct_converters.h", "a")
-
-    hfile.write("typedef struct win%s win%s;\n" % (handler_name, handler_name))
-
-    cppfile.write("#pragma pack(push, 8)\n")
-    cppfile.write("struct win%s {\n" % handler_name)
-    for m in struct.get_children():
-        if m.kind == CursorKind.FIELD_DECL:
-            if m.type.get_canonical().kind == TypeKind.CONSTANTARRAY:
-                cppfile.write("    %s %s[%u]" % (m.type.element_type.spelling, m.displayname, m.type.element_count))
-            elif m.type.get_canonical().kind == TypeKind.RECORD and \
-                    struct_needs_conversion(m.type.get_canonical()):
-                cppfile.write("    win%s_%s %s" % (strip_ns(m.type.spelling), display_sdkver(sdkver), m.displayname))
-            else:
-                if m.type.get_canonical().kind == TypeKind.POINTER and \
-                        m.type.get_pointee().kind == TypeKind.FUNCTIONPROTO:
-                    cppfile.write("    void *%s /*fn pointer*/ " % m.displayname)
-                else:
-                    cppfile.write("    %s %s" % (m.type.spelling, m.displayname))
-            cppfile.write(get_field_attribute_str(m) + ";\n")
-    if WRAPPERS in which:
-        cppfile.write("\n    %s *linux_side;\n" % struct.displayname)
-    cppfile.write("}  __attribute__ ((ms_struct));\n")
-    cppfile.write("#pragma pack(pop)\n\n")
-
-    def dump_converter(src, dst, size):
-        for m in struct.get_children():
-            if m.kind == CursorKind.FIELD_DECL:
-                if m.type.get_canonical().kind == TypeKind.CONSTANTARRAY:
-                    #TODO: if this is a struct, or packed differently, we'll have to
-                    # copy each element in a for-loop
-                    cppfile.write("    memcpy(" + dst + "->" + m.displayname + ", " + src + "->" + m.displayname + ", sizeof(" + dst + "->" + m.displayname + "));\n")
-                elif m.type.get_canonical().kind == TypeKind.RECORD and \
-                        struct_needs_conversion(m.type.get_canonical()):
-                    cppfile.write("    struct_" + strip_ns(m.type.spelling) + "_" + display_sdkver(sdkver) + "_" + src + "_to_" + dst + \
-                            "(&" + src + "->" + m.displayname + ", &" + dst + "->" + m.displayname + ");\n")
-                elif struct.displayname in struct_size_fields and \
-                    m.displayname in struct_size_fields[struct.displayname]:
-                        cppfile.write("    " + dst + "->" + m.displayname + " = sizeof(*" + dst + ");\n")
-                elif size and strip_ns(m.type.get_canonical().spelling) == "VREvent_Data_t":
-                    #truncate variable-length data struct at the end of the parent struct
-                    #XXX: dumb hard-coding. are the other types with lengths variable length?
-                    cppfile.write("    memcpy(&" + dst + "->data, &" + src + "->data, " + size + " - (((char*)&" + dst + "->data) - ((char*)" + dst + ")));\n")
-                else:
-                    cppfile.write("    " + dst + "->" + m.displayname + " = " + src + "->" + m.displayname + ";\n")
-
-    if strip_ns(struct.displayname) in next_is_size_structs:
-        size_arg = "sz"
-        size_arg_type = ", uint32_t sz"
-    else:
-        size_arg = None
-        size_arg_type = ""
-
-    if LIN_TO_WIN in which:
-        hfile.write("extern void struct_%s_lin_to_win(void *l, void *w%s);\n" % (handler_name, size_arg_type))
-        cppfile.write("void struct_%s_lin_to_win(void *l, void *w%s)\n{\n" % (handler_name, size_arg_type))
-        cppfile.write("    struct win%s *win = (struct win%s *)w;\n" % (handler_name, handler_name))
-        cppfile.write("    %s *lin = (%s *)l;\n" % (struct.displayname, struct.displayname))
-        dump_converter("lin", "win", size_arg)
-        cppfile.write("}\n\n")
-
-    if WIN_TO_LIN in which:
-        #XXX: should pass size param here, too
-        hfile.write("extern void struct_%s_win_to_lin(void *w, void *l);\n" % handler_name)
-        cppfile.write("void struct_%s_win_to_lin(void *w, void *l)\n{\n" % handler_name)
-        cppfile.write("    struct win%s *win = (struct win%s *)w;\n" % (handler_name, handler_name))
-        cppfile.write("    %s *lin = (%s *)l;\n" % (struct.displayname, struct.displayname))
-        dump_converter("win", "lin", None)
-        cppfile.write("}\n\n")
-
-    if WRAPPERS in which:
-        hfile.write("extern struct win%s *struct_%s_wrap(void *l);\n" % (handler_name, handler_name))
-
-        cppfile.write("struct win%s *struct_%s_wrap(void *l)\n{\n" % (handler_name, handler_name))
-        cppfile.write("    struct win%s *win = (struct win%s *)malloc(sizeof(*win));\n" % (handler_name, handler_name))
-        cppfile.write("    %s *lin = (%s *)l;\n" % (struct.displayname, struct.displayname))
-
-        dump_converter("lin", "win", None)
-
-        cppfile.write("    win->linux_side = lin;\n");
-        cppfile.write("    return win;\n")
-
-        cppfile.write("}\n\n")
-
-        hfile.write("extern %s *struct_%s_unwrap(win%s *w);\n" % (struct.displayname, handler_name, handler_name))
-
-        cppfile.write("struct %s *struct_%s_unwrap(win%s *w)\n{\n" % (struct.displayname, handler_name, handler_name))
-        cppfile.write("    %s *ret = w->linux_side;\n" % struct.displayname)
-        cppfile.write("    free(w);\n")
-        cppfile.write("    return ret;\n")
-        cppfile.write("}\n\n")
-
-    generated_struct_handlers.append(handler_name)
+    name = canonical_typename(ftype)
+    abis = find_struct_abis(name)
+    if not abis:
+        return " __attribute__((aligned(8)))"
+    return f" __attribute__((aligned({abis['w32'].align})))"
 
 
 def generate_x64_call_flat_method(cfile, param_count, has_floats, is_4th_float):
@@ -1123,7 +1103,7 @@ def generate_x64_call_flat_method(cfile, param_count, has_floats, is_4th_float):
     l(r'extern void %s(void);' % name);
 
 def generate_flatapi_c():
-    with open("vrclient_x64/flatapi.c", "w") as f:
+    with open("flatapi.c", "w") as f:
         f.write(r"""/* This file is auto-generated, do not edit. */
 
 #include <stdarg.h>
@@ -1195,189 +1175,41 @@ extern void call_flat_method_f(void);
 
         f.write("#endif\n")
 
-def generate_c_api_method_test(f, header, thunks_c, class_name, method_name, method):
-    thunk_params = get_capi_thunk_params(method)
-    f.write("\n    init_thunk(t, this_ptr_value, %s_%s, %s);\n" % (class_name, method_name, thunk_params))
-    f.write("    ")
-    header.write("\n")
-    thunks_c.write("\n")
-
-    returns_record = method.result_type.get_canonical().kind == TypeKind.RECORD
-    if returns_record:
-        f.write("%s *" % strip_ns(method.result_type.spelling))
-        header.write("%s *" % strip_ns(method.result_type.spelling))
-        thunks_c.write("%s *" % strip_ns(method.result_type.spelling))
-    else:
-        f.write("%s " % strip_ns(method.result_type.spelling))
-        header.write("%s " % strip_ns(method.result_type.spelling))
-        thunks_c.write("%s " % strip_ns(method.result_type.spelling))
-    first_param = True
-    f.write('(__stdcall *capi_%s_%s)(' % (class_name, method_name))
-    header.write('__thiscall %s_%s(void *_this' % (class_name, method_name))
-    thunks_c.write('__thiscall %s_%s(void *_this' % (class_name, method_name))
-    if returns_record:
-        f.write("%s *_r" % strip_ns(method.result_type.spelling))
-        first_param = False
-        header.write(", %s *_r" % strip_ns(method.result_type.spelling))
-        thunks_c.write(", %s *_r" % strip_ns(method.result_type.spelling))
-
-    for param in get_params(method):
-        if param.type.kind == TypeKind.POINTER \
-                and param.type.get_pointee().kind == TypeKind.UNEXPOSED:
-            typename = "void *"
-        else:
-            typename = param.type.spelling.split("::")[-1].replace("&", "*");
-        if not first_param:
-            f.write(", ")
-        first_param = False
-        f.write("%s %s" % (typename, param.spelling))
-        header.write(", %s %s" % (typename, param.spelling))
-        thunks_c.write(", %s %s" % (typename, param.spelling))
-    f.write(") = (void *)t;\n")
-    header.write(");\n")
-    thunks_c.write(")\n{\n")
-
-    def get_param_typename(param):
-        param_size = param.type.get_size()
-        if param.type.kind == TypeKind.POINTER \
-                or param.type.spelling.endswith("&") \
-                or param.type.spelling == "vr::glSharedTextureHandle_t":
-            return "ptr"
-        elif param.type.spelling == "bool":
-            return "bool"
-        elif param.type.spelling == "float":
-            return "float"
-        elif param.type.spelling == "vr::HmdRect2_t":
-            return "HmdRect2"
-        elif param.type.spelling == "vr::HmdVector2_t":
-            return "HmdVector2"
-        elif param.type.spelling == "vr::HmdVector3_t":
-            return "HmdVector3"
-        elif param.type.spelling == "vr::HmdColor_t":
-            return "HmdColor"
-        elif param_size == 8:
-            return "uint64"
-        elif param_size == 4 or param_size == 2:
-            return "uint32"
-        else:
-            return "unknown"
-
-    thunks_c.write("    push_ptr_parameter(_this);\n")
-    if returns_record:
-        thunks_c.write("    push_ptr_parameter(_r);\n")
-    for param in get_params(method):
-        typename = get_param_typename(param)
-        thunks_c.write("    push_%s_parameter(%s);\n" % (typename, param.spelling))
-    if method.result_type.kind != TypeKind.VOID:
-        thunks_c.write("    return 0;\n")
-    thunks_c.write("}\n")
-
-    parameter_checks = []
-    def add_parameter_check(typename, value):
-        parameter_checks.append("check_%s_parameter(\"%s_%s\", %s)" % (typename, class_name, method_name, value))
-    add_parameter_check("ptr", "this_ptr_value")
-    f.write("\n")
-    f.write("    clear_parameters();\n")
-    f.write("    capi_%s_%s(" % (class_name, method_name))
-    first_param = True
-    if returns_record:
-        f.write("data_ptr_value")
-        first_param = False
-        add_parameter_check("ptr", "data_ptr_value")
-    for i, param in enumerate(get_params(method)):
-        i += 1
-        typename = get_param_typename(param)
-        if typename == "ptr":
-            v = "(void *)%s" % i
-        elif typename == "bool":
-            v = "1"
-        elif typename == "float":
-            v = "%s.0f" % i
-        elif typename == "HmdRect2":
-            v = "DEFAULT_RECT"
-        elif typename == "HmdVector2":
-            v = "DEFAULT_VECTOR2"
-        elif typename == "HmdVector3":
-            v = "DEFAULT_VECTOR3"
-        elif typename == "HmdColor":
-            v = "DEFAULT_COLOR"
-        else:
-            v = str(i)
-        if not first_param:
-            f.write(", ")
-        first_param = False
-        f.write(v)
-        add_parameter_check(typename, v)
-    f.write(");\n")
-    for c in parameter_checks:
-        f.write("    %s;\n" % c)
-
-def generate_c_api_thunk_tests(winclassname, methods, method_names):
-    class_name = re.sub(r'^win[A-Za-z]+_', '', winclassname)
-
-    filename = "tests/capi_thunks_autogen.h"
-    file_exists = os.path.isfile(filename)
-    header = open(filename, "a")
-    if not file_exists:
-        header.write("""/* This file is auto-generated, do not edit. */
-#include <stdarg.h>
-#include <stdint.h>
-
-#include "windef.h"
-#include "winbase.h"
-
-#include "cxx.h"
-#include "flatapi.h"
-#include "vrclient_defs.h"
-
-#include "capi_thunks.h"
-""")
-    header.write("\nvoid test_capi_thunks_%s(void);\n" % class_name)
-
-    filename = "tests/capi_thunks_autogen.c"
-    file_exists = os.path.isfile(filename)
-    thunks_c = open(filename, "a")
-    if not file_exists:
-        thunks_c.write("""/* This file is auto-generated, do not edit. */
-#include "capi_thunks_autogen.h"
-""")
-
-    filename = "tests/capi_thunks_tests_autogen.c"
-    file_exists = os.path.isfile(filename)
-    with open(filename, "a") as f:
-        if not file_exists:
-            f.write("""/* This file is auto-generated, do not edit. */
-#include "capi_thunks_autogen.h"
-""")
-        f.write("\nvoid test_capi_thunks_%s(void)\n{\n" % class_name)
-        f.write("    struct thunk *t = alloc_thunks(1);\n");
-        for i in range(len(methods)):
-            generate_c_api_method_test(f, header, thunks_c, class_name, method_names[i], methods[i])
-        f.write("    VirtualFree(t, 0, MEM_RELEASE);\n")
-        f.write("}\n")
-
-    filename = "tests/main_autogen.c"
-    file_exists = os.path.isfile(filename)
-    with open(filename, "a") as f:
-        if not file_exists:
-            f.write("""/* This file is auto-generated, do not edit. */
-#include "capi_thunks_autogen.h"
-
-#include <stdio.h>
-
-int main(void)
-{
-""")
-        f.write("    test_capi_thunks_%s();\n" % class_name)
 
 
-prog = re.compile("^.*const\s*char.* \*?(\w*)_Version.*\"(.*)\"")
-for sdkver in sdk_versions:
-    print(f'parsing SDK version {sdkver}...')
+def enumerate_structs(cursor, vr_only=False):
+    for child in cursor.get_children():
+        if child.kind == CursorKind.NAMESPACE \
+           and child.displayname == "vr":
+            yield from child.get_children()
+        elif not vr_only:
+            yield child
+
+
+def parse(sources, sdkver, abi):
+    args = [f'-m{abi[1:]}', '-I' + CLANG_PATH + '/include/']
+    if abi[0] == 'w':
+        args += ["-D_WIN32", "-U__linux__"]
+        args += ["-fms-extensions", "-mms-bitfields"]
+        args += ["-Wno-ignored-attributes", "-Wno-incompatible-ms-struct"]
+    if abi[0] == 'u':
+        args += ["-DGNUC"]
+
+    index = Index.create()
+    build = index.parse("source.cpp", args=args, unsaved_files=sources.items())
+    diagnostics = list(build.diagnostics)
+    for diag in diagnostics: print(diag)
+    assert len(diagnostics) == 0
+
+    return sdkver, abi, build
+
+
+def load(sdkver):
+    prog = re.compile("^.*const\s*char.* \*?(\w*)_Version.*\"(.*)\"")
     sdkdir = f'openvr_{sdkver}'
 
     sources = {}
-    iface_versions = {}
+    versions = {}
     has_vrclientcore = False
     for file in os.listdir(sdkdir):
         x = open(f"{sdkdir}/{file}", "r")
@@ -1389,73 +1221,466 @@ for sdkver in sdk_versions:
                 result = prog.match(l)
                 if result:
                     iface, version = result.group(1, 2)
-                    iface_versions[iface] = version
+                    versions[iface] = version
 
     if not has_vrclientcore:
         source = [f'#include "{sdkdir}/openvr.h"']
     else:
-        source = [f'#include "{sdkdir}/{file}"' for file, _, _ in files]
-
+        source = [f'#include "{sdkdir}/{file}"'
+                  for file in SDK_SOURCES.keys()]
     sources["source.cpp"] = "\n".join(source)
-    windows_args = ["-D_WIN32", "-fms-extensions", "-Wno-ignored-attributes",
-                    "-mms-bitfields", "-U__linux__", "-Wno-incompatible-ms-struct"]
-    windows_args += ['-I' + CLANG_PATH + '/include/']
-    linux_args = ["-DGNUC"]
-    linux_args += ['-I' + CLANG_PATH + '/include/']
 
-    index = Index.create()
+    return versions, sources
 
-    linux_build32 = index.parse("source.cpp", args=linux_args + ["-m32"], unsaved_files=sources.items())
-    diagnostics = list(linux_build32.diagnostics)
-    for diag in diagnostics: print(diag)
-    assert len(diagnostics) == 0
 
-    linux_build64 = index.parse("source.cpp", args=linux_args + ["-m64"], unsaved_files=sources.items())
-    diagnostics = list(linux_build64.diagnostics)
-    for diag in diagnostics: print(diag)
-    assert len(diagnostics) == 0
+def classify_struct(name):
+    if name in EXEMPT_STRUCTS:
+        return None
+    structs = all_structs[name]
 
-    windows_build32 = index.parse("source.cpp", args=windows_args + ["-m32"], unsaved_files=sources.items())
-    diagnostics = list(windows_build32.diagnostics)
-    for diag in diagnostics: print(diag)
-    assert len(diagnostics) == 0
+    prev = []
+    versions = {}
+    unique = True
 
-    windows_build64 = index.parse("source.cpp", args=windows_args + ["-m64"], unsaved_files=sources.items())
-    diagnostics = list(windows_build64.diagnostics)
-    for diag in diagnostics: print(diag)
-    assert len(diagnostics) == 0
+    for sdkver in filter(lambda v: v in structs, reversed(SDK_VERSIONS)):
+        abis = [structs[sdkver][a] for a in ABIS]
 
-    classes = sum([e for _, e, _ in files], [])
-    system_structs = sum([e for _, _, e in files], [])
+        if any(abis[0].needs_conversion(a) for a in abis[1:]):
+            unique = False
 
-    def enumerate_structs(cursor, vr_only=False):
-        for child in cursor.get_children():
-            if child.kind == CursorKind.NAMESPACE and child.displayname == "vr":
-                yield from child.get_children()
-            elif not vr_only:
-                yield child
+        def is_always_compatible(other):
+            for a, b in zip(abis, other):
+                if a.needs_conversion(b):
+                    return False
+            return True
 
-    windows_structs32 = dict(reversed([(child.type.spelling, child.type) for child
-                                       in enumerate_structs(windows_build32.cursor)]))
-    windows_structs64 = dict(reversed([(child.type.spelling, child.type) for child
-                                       in enumerate_structs(windows_build64.cursor)]))
-    linux_structs64 = dict(reversed([(child.type.spelling, child.type) for child
-                                     in enumerate_structs(linux_build64.cursor)]))
+        compat = next((k for k, v in prev if is_always_compatible(v)), None)
+        if compat:
+            versions[sdkver] = versions[compat]
+        else:
+            [abi.set_used() for abi in abis] # make sure order is computed
+            versions[sdkver] = f"{name}_{display_sdkver(sdkver)}"
+            prev += [(sdkver, abis)]
 
-    for child in enumerate_structs(linux_build32.cursor, vr_only=True):
-        if child.kind == CursorKind.CLASS_DECL and child.displayname in classes:
-            handle_class(sdkver, child)
-        if child.kind in [CursorKind.STRUCT_DECL, CursorKind.CLASS_DECL]:
-            handle_struct(sdkver, child)
-        if child.displayname in print_sizes:
-            sys.stdout.write("size of %s is %u\n" % (child.displayname, child.type.get_size()))
+    if unique:
+        unique_structs.append(name)
 
-for f in cpp_files_need_close_brace:
-    m = open(f, "a")
-    m.write("\n}\n")
+    if len(set(versions.values())) == 1:
+        versions = {sdkver: name for sdkver in versions.keys()}
+    return versions
 
-with open("tests/main_autogen.c", "a") as f:
-    f.write("    printf(\"All tests executed.\\n\");\n")
-    f.write("}\n")
+
+for i, sdkver in enumerate(SDK_VERSIONS):
+    print(f'loading SDKs... {i * 100 // len(SDK_VERSIONS)}%', end='\r')
+    all_versions[sdkver], all_sources[sdkver] = load(sdkver)
+print(u'loading SDKs... 100%')
+
+
+tmp_classes = {}
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    arg0 = [sdkver for sdkver in SDK_VERSIONS for abi in ABIS]
+    arg1 = [abi for sdkver in SDK_VERSIONS for abi in ABIS]
+    def parse_map(sdkver, abi):
+        return parse(all_sources[sdkver], sdkver, abi)
+
+    results = executor.map(parse_map, arg0, arg1)
+    for i, result in enumerate(results):
+        print(f'parsing SDKs... {i * 100 // len(arg0)}%', end='\r')
+        sdkver, abi, build = result
+        if sdkver not in all_records: all_records[sdkver] = {}
+        if sdkver not in tmp_classes: tmp_classes[sdkver] = {}
+
+        versions = all_versions[sdkver]
+
+        structs = enumerate_structs(build.cursor, vr_only=True)
+        structs = filter(lambda c: c.is_definition(), structs)
+        structs = filter(lambda c: c.type.get_canonical().kind == TypeKind.RECORD, structs)
+        structs = filter(lambda c: c.kind != CursorKind.TYPEDEF_DECL, structs)
+        structs = filter(lambda c: c.spelling not in SDK_CLASSES, structs)
+        structs = [Record(sdkver, abi, c) for c in structs]
+        structs = {c.name: c for c in structs}
+
+        classes = enumerate_structs(build.cursor, vr_only=True)
+        classes = filter(lambda c: c.is_definition(), classes)
+        classes = filter(lambda c: c.kind == CursorKind.CLASS_DECL, classes)
+        classes = filter(lambda c: c.spelling in SDK_CLASSES, classes)
+        classes = filter(lambda c: c.spelling in versions, classes)
+        classes = [Class(sdkver, abi, c) for c in classes]
+        classes = {c.version: c for c in classes}
+
+        all_records[sdkver][abi] = structs
+        tmp_classes[sdkver][abi] = classes
+
+        for name, struct in structs.items():
+            if name not in all_structs:
+                all_structs[name] = {}
+            if sdkver not in all_structs[name]:
+                all_structs[name][sdkver] = {}
+            all_structs[name][sdkver][abi] = struct
+
+for i, sdkver in enumerate(reversed(SDK_VERSIONS)):
+    all_classes.update(tmp_classes[sdkver]['u32'])
+
+print('parsing SDKs... 100%')
+
+
+tmp_structs = {}
+
+for i, name in enumerate(all_structs.keys()):
+    print(f'classifying structs... {i * 100 // len(all_structs.keys())}%', end='\r')
+    versions = classify_struct(name)
+    for sdkver in SDK_VERSIONS:
+        if not versions or sdkver not in versions: continue
+        all_versions[sdkver][name] = versions[sdkver]
+
+def struct_order(x):
+    name, structs = x if type(x) is tuple else (x, all_structs[x])
+    order = (struct.order for abis in structs.values()
+             for struct in abis.values())
+    return (min(order), name)
+
+for name, structs in sorted(all_structs.items(), key=struct_order):
+    tmp_structs[name] = {}
+    for sdkver in filter(lambda v: v in structs, SDK_VERSIONS):
+        tmp_structs[name][sdkver] = {a: structs[sdkver][a] for a in ABIS}
+
+all_structs = tmp_structs
+
+print('classifying structs... 100%')
+
+
+for klass in all_classes.values():
+    with open(f"win{klass.name}.c", "w") as file:
+        out = file.write
+
+        out(u'/* This file is auto-generated, do not edit. */\n')
+        out(u'#include <stdarg.h>\n')
+        out(u'#include <stdint.h>\n')
+        out(u'\n')
+        out(u'#include "vrclient_private.h"\n')
+        out(u'\n')
+        out(u'#include "flatapi.h"\n')
+        out(u'\n')
+        out(u'WINE_DEFAULT_DEBUG_CHANNEL(vrclient);\n')
+        out(u'\n')
+
+
+for _, klass in sorted(all_classes.items()):
+    sdkver = klass._sdkver
+    handle_class(klass)
 
 generate_flatapi_c()
+
+
+for name in sorted(set(k.name for k in all_classes.values())):
+    with open(f"win{name}.c", "a") as file:
+        out = file.write
+        out(f'void init_win{name}_rtti( char *base )\n')
+        out(u'{\n')
+        out(u'#ifdef __x86_64__\n')
+
+for _, klass in sorted(all_classes.items()):
+    with open(f"win{klass.name}.c", "a") as file:
+        out = file.write
+        out(f'    init_win{klass.full_name}_rtti( base );\n')
+
+for name in sorted(set(k.name for k in all_classes.values())):
+    with open(f"win{name}.c", "a") as file:
+        out = file.write
+        out(u'#endif /* __x86_64__ */\n')
+        out(u'}\n')
+
+
+with open("vrclient_generated.h", "w") as file:
+    out = file.write
+
+    out(u'/* This file is auto-generated, do not edit. */\n\n')
+
+    for _, klass in sorted(all_classes.items()):
+        out(f"extern struct w_steam_iface *create_win{klass.full_name}(void *);\n")
+        out(f"extern struct w_steam_iface *create_win{klass.full_name}_FnTable(void *);\n")
+        out(f"extern void destroy_win{klass.full_name}(struct w_steam_iface *);\n")
+        out(f"extern void destroy_win{klass.full_name}_FnTable(struct w_steam_iface *);\n")
+
+
+with open("vrclient_generated.c", "w") as file:
+    out = file.write
+
+    out(u'/* This file is auto-generated, do not edit. */\n\n')
+    out(u'#include "vrclient_private.h"\n\n')
+
+    out(u'static const struct { const char *iface_version; iface_constructor ctor; } constructors[] =\n')
+    out(u'{\n')
+    for _, klass in sorted(all_classes.items()):
+        out(f'    {{"{klass.version}", create_win{klass.full_name}}},\n')
+        out(f'    {{"FnTable:{klass.version}", create_win{klass.full_name}_FnTable}},\n')
+    out(u'};\n')
+    out(u'\n')
+    out(u'iface_constructor find_iface_constructor( const char *iface_version )\n')
+    out(u'{\n')
+    out(u'    int i;\n')
+    out(u'    for (i = 0; i < ARRAYSIZE(constructors); ++i)\n')
+    out(u'        if (!strcmp( iface_version, constructors[i].iface_version ))\n')
+    out(u'            return constructors[i].ctor;\n')
+    out(u'    return NULL;\n')
+    out(u'}\n')
+    out(u'\n')
+    out(u'static const struct { const char *iface_version; iface_destructor dtor; } destructors[] =\n')
+    out(u'{\n')
+    for _, klass in sorted(all_classes.items()):
+        out(f'    {{"{klass.version}", destroy_win{klass.full_name}}},\n')
+        out(f'    {{"FnTable:{klass.version}", destroy_win{klass.full_name}_FnTable}},\n')
+    out(u'};\n')
+    out(u'\n')
+    out(u'iface_destructor find_iface_destructor( const char *iface_version )\n')
+    out(u'{\n')
+    out(u'    int i;\n')
+    out(u'    for (i = 0; i < ARRAYSIZE(destructors); ++i)\n')
+    out(u'        if (!strcmp( iface_version, destructors[i].iface_version ))\n')
+    out(u'            return destructors[i].dtor;\n')
+    out(u'    return NULL;\n')
+    out(u'}\n\n')
+
+    for name in sorted(set(k.name for k in all_classes.values())):
+        out(f'extern void init_win{name}_rtti( char * );\n')
+    out(u'\n')
+    out(u'void init_rtti( char *base )\n')
+    out(u'{\n')
+    for name in sorted(set(k.name for k in all_classes.values())):
+        out(f'    init_win{name}_rtti( base );\n')
+    out(u'}\n')
+
+
+for name, klasses in all_classes.items():
+    if name not in SDK_CLASSES: continue
+    for sdkver, klass in klasses.items():
+        version = all_versions[sdkver][name[1:].upper()]
+        handle_class(sdkver, klass, version, SDK_CLASSES[name])
+
+declared = {}
+
+with open('vrclient_structs_generated.h', 'w') as file:
+    out = file.write
+
+    for name in sorted(unique_structs, key=struct_order):
+        if name in EXEMPT_STRUCTS: continue
+        for sdkver, abis in all_structs[name].items():
+            if name not in all_versions[sdkver]: continue
+
+            version = all_versions[sdkver][name]
+            if f'struct {version}' in declared: continue
+            declared[f'struct {version}'] = True
+
+            kind = 'union' if type(abis['w64']) is Union else 'struct'
+
+            out(f'typedef {kind} {version} {version};\n')
+            abis['w64'].write_definition(out, "", [])
+
+    for name, structs in all_structs.items():
+        if name in EXEMPT_STRUCTS: continue
+        if name in unique_structs: continue
+        for sdkver, abis in structs.items():
+            if name not in all_versions[sdkver]: continue
+
+            version = all_versions[sdkver][name]
+            if f'typedef {version}' in declared: continue
+            declared[f'typedef {version}'] = True
+
+            kind = 'union' if type(abis['w64']) is Union else 'struct'
+
+            if type(abis['w64']) is Class:
+                out(f'typedef {kind} u_{version} u_{version};\n')
+                out(f'typedef {kind} u_{version} u64_{version};\n')
+                out(f'typedef {kind} u_{version} u32_{version};\n')
+                out(f'typedef {kind} w_{version} w_{version};\n')
+                out(f'typedef {kind} w_{version} w64_{version};\n')
+                out(f'typedef {kind} w_{version} w32_{version};\n')
+                continue
+
+            if abis["w64"].needs_conversion(abis["u64"]):
+                out(f'typedef {kind} u64_{version} u64_{version};\n')
+            else:
+                out(f'typedef {kind} w64_{version} u64_{version};\n')
+            out(f'typedef {kind} w64_{version} w64_{version};\n')
+
+            if abis["w32"].needs_conversion(abis["u32"]):
+                out(f'typedef {kind} u32_{version} u32_{version};\n')
+            else:
+                out(f'typedef {kind} w32_{version} u32_{version};\n')
+            out(f'typedef {kind} w32_{version} w32_{version};\n')
+
+    for name, structs in all_structs.items():
+        if name in EXEMPT_STRUCTS: continue
+        if name in unique_structs: continue
+        for sdkver, abis in structs.items():
+            if name not in all_versions[sdkver]: continue
+
+            version = all_versions[sdkver][name]
+            if f'struct {version}' in declared: continue
+            declared[f'struct {version}'] = True
+
+            kind = 'union' if type(abis['w64']) is Union else 'struct'
+
+            if type(abis['w64']) is Class:
+                abis['w64'].write_definition(out, "w_")
+                abis['u64'].write_definition(out, "u_")
+                continue
+
+            if not abis["w64"].needs_conversion(abis["u64"]):
+                abis['w64'].write_definition(out, "w64_", [])
+            else:
+                abis['w64'].write_definition(out, "w64_", ["u64_"])
+                abis['u64'].write_definition(out, "u64_", ["w64_"])
+
+            if not abis["w32"].needs_conversion(abis["u32"]):
+                abis['w32'].write_definition(out, "w32_", [])
+            else:
+                abis['w32'].write_definition(out, "w32_", ["u32_"])
+                abis['u32'].write_definition(out, "u32_", ["w32_"])
+
+            out(u'#ifdef __i386__\n')
+            out(f'typedef w32_{version} w_{version};\n')
+            out(f'typedef u32_{version} u_{version};\n')
+            out(u'#endif\n')
+            out(u'#ifdef __x86_64__\n')
+            out(f'typedef w64_{version} w_{version};\n')
+            out(f'typedef u64_{version} u_{version};\n')
+            out(u'#endif\n')
+            out(u'\n')
+
+
+all_methods = [(k, m) for _, k in sorted(all_classes.items())
+               for m in k.methods]
+
+with open("unix_private_generated.h", "w") as file:
+    out = file.write
+
+    out(u'/* This file is auto-generated, do not edit. */\n\n')
+    out(u'#ifdef __cplusplus\n')
+    out(u'extern "C" {\n')
+    out(u'#endif /* __cplusplus */\n')
+    out(u'\n')
+
+    for klass in all_classes.values():
+        sdkver = klass._sdkver
+        klass.write_definition(out, "u_")
+    out(u'\n')
+
+    for klass, method in all_methods:
+        sdkver = klass._sdkver
+        if type(method) is Destructor:
+            continue
+        out(f'NTSTATUS {method.full_name}( void * );\n')
+    out(u'\n')
+
+    out(u'#ifdef __cplusplus\n')
+    out(u'} /* extern "C" */\n')
+    out(u'#endif /* __cplusplus */\n')
+
+
+with open(u"unixlib_generated.h", "w") as file:
+    out = file.write
+
+    out(u'/* This file is auto-generated, do not edit. */\n')
+    out(u'#include <stdarg.h>\n')
+    out(u'#include <stddef.h>\n')
+    out(u'#include <stdint.h>\n')
+    out(u'\n')
+    out(u'#ifdef __cplusplus\n')
+    out(u'extern "C" {\n')
+    out(u'#endif /* __cplusplus */\n')
+    out(u'\n')
+
+    out(u'#include <pshpack1.h>\n\n')
+    for klass, method in all_methods:
+        sdkver = klass._sdkver
+        method.write_params(out)
+    out(u'#include <poppack.h>\n\n')
+
+    out(u'enum unix_funcs\n')
+    out(u'{\n')
+    for func in UNIX_FUNCS:
+        out(f'    unix_{func},\n')
+    for klass, method in all_methods:
+        sdkver = klass._sdkver
+        if type(method) is Destructor:
+            continue
+        out(f'    unix_{method.full_name},\n')
+    out(u'};\n')
+    out(u'\n')
+
+    out(u'#ifdef __cplusplus\n')
+    out(u'} /* extern "C" */\n')
+    out(u'#endif /* __cplusplus */\n')
+
+
+with open('unixlib_generated.cpp', 'w') as file:
+    out = file.write
+
+    out(u'/* This file is auto-generated, do not edit. */\n\n')
+    out(u'#include "unix_private.h"\n\n')
+
+    out(u'extern "C" const unixlib_entry_t __wine_unix_call_funcs[] =\n')
+    out(u'{\n')
+    for func in UNIX_FUNCS:
+        out(f'    {func},\n')
+    for klass, method in all_methods:
+        sdkver = klass._sdkver
+        if type(method) is Destructor:
+            continue
+        out(f'    {method.full_name},\n')
+    out(u'};\n')
+    out(u'\n')
+
+    for name in sorted(unique_structs, key=struct_order):
+        for sdkver, abis in all_structs[name].items():
+            if name not in all_versions[sdkver]: continue
+
+            version = all_versions[sdkver][name]
+            if f'checks {version}' in declared: continue
+            declared[f'checks {version}'] = True
+
+            abis['w64'].write_checks(out, "")
+
+    for name, structs in all_structs.items():
+        if name in EXEMPT_STRUCTS: continue
+        if name in unique_structs: continue
+        for sdkver, abis in structs.items():
+            if name not in all_versions[sdkver]: continue
+
+            version = all_versions[sdkver][name]
+            if f'checks {version}' in declared: continue
+            declared[f'checks {version}'] = True
+
+            if type(abis['w64']) is Class:
+                continue
+
+            abis['w64'].write_checks(out, "w64_")
+            abis['u64'].write_checks(out, "u64_")
+            abis['w32'].write_checks(out, "w32_")
+            abis['u32'].write_checks(out, "u32_")
+
+        for sdkver, abis in structs.items():
+            if name not in all_versions[sdkver]: continue
+
+            version = all_versions[sdkver][name]
+            if f'struct {version} convert' in declared: continue
+            declared[f'struct {version} convert'] = True
+
+            if type(abis['w64']) in (Class, Union):
+                continue
+
+            if abis["w64"].needs_conversion(abis["u64"]):
+                out(u'#ifdef __x86_64__\n')
+                abis['w64'].write_converter('u64_')
+                out(u'\n')
+                abis['u64'].write_converter('w64_')
+                out(u'#endif\n\n')
+
+            if abis["w32"].needs_conversion(abis["u32"]):
+                out(u'#ifdef __i386__\n')
+                abis['w32'].write_converter('u32_')
+                out(u'\n')
+                abis['u32'].write_converter('w32_')
+                out(u'#endif\n\n')

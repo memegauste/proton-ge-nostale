@@ -1,52 +1,59 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_157/steam_api.h"
-#include "steamworks_sdk_157/steamnetworkingtypes.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_157
-#include "struct_converters.h"
-#include "cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001.h"
-uint32 cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionCount(void *linux_side)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionCount( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->GetSessionCount();
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionCount_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionCount_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    params->_ret = iface->GetSessionCount(  );
+    return 0;
 }
 
-RemotePlaySessionID_t cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionID(void *linux_side, int iSessionIndex)
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionID( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->GetSessionID((int)iSessionIndex);
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionID_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionID_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    params->_ret = iface->GetSessionID( params->iSessionIndex );
+    return 0;
 }
 
-CSteamID cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionSteamID(void *linux_side, RemotePlaySessionID_t unSessionID)
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionSteamID( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->GetSessionSteamID((RemotePlaySessionID_t)unSessionID);
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionSteamID_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionSteamID_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    *params->_ret = iface->GetSessionSteamID( params->unSessionID );
+    return 0;
 }
 
-const char * cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientName(void *linux_side, RemotePlaySessionID_t unSessionID)
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientName( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->GetSessionClientName((RemotePlaySessionID_t)unSessionID);
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientName_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientName_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    params->_ret = iface->GetSessionClientName( params->unSessionID );
+    return 0;
 }
 
-ESteamDeviceFormFactor cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientFormFactor(void *linux_side, RemotePlaySessionID_t unSessionID)
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientFormFactor( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->GetSessionClientFormFactor((RemotePlaySessionID_t)unSessionID);
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientFormFactor_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_GetSessionClientFormFactor_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    params->_ret = iface->GetSessionClientFormFactor( params->unSessionID );
+    return 0;
 }
 
-bool cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BGetSessionClientResolution(void *linux_side, RemotePlaySessionID_t unSessionID, int * pnResolutionX, int * pnResolutionY)
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BGetSessionClientResolution( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->BGetSessionClientResolution((RemotePlaySessionID_t)unSessionID, (int *)pnResolutionX, (int *)pnResolutionY);
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BGetSessionClientResolution_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BGetSessionClientResolution_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    params->_ret = iface->BGetSessionClientResolution( params->unSessionID, params->pnResolutionX, params->pnResolutionY );
+    return 0;
 }
 
-bool cppISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BSendRemotePlayTogetherInvite(void *linux_side, CSteamID steamIDFriend)
+NTSTATUS ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BSendRemotePlayTogetherInvite( void *args )
 {
-    return ((ISteamRemotePlay*)linux_side)->BSendRemotePlayTogetherInvite((CSteamID)steamIDFriend);
+    struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BSendRemotePlayTogetherInvite_params *params = (struct ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001_BSendRemotePlayTogetherInvite_params *)args;
+    struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *iface = (struct u_ISteamRemotePlay_STEAMREMOTEPLAY_INTERFACE_VERSION001 *)params->linux_side;
+    params->_ret = iface->BSendRemotePlayTogetherInvite( params->steamIDFriend );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

@@ -1,52 +1,50 @@
 /* This file is auto-generated, do not edit. */
-#include <stdarg.h>
-
-#include "windef.h"
-#include "winbase.h"
-#include "wine/debug.h"
-
-#include "cxx.h"
-
-#include "steam_defs.h"
-
 #include "steamclient_private.h"
-
-#include "struct_converters.h"
 
 WINE_DEFAULT_DEBUG_CHANNEL(steamclient);
 
-#include "cppISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001.h"
-
-typedef struct __winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001 {
-    vtable_ptr *vtable;
-    void *linux_side;
-} winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001;
-
 DEFINE_THISCALL_WRAPPER(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData, 32)
-uint32 __thiscall winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001 *_this, uint32 nAppID, void * pvBuffer, uint32 cbBufferLength, uint32 * piAppId, uint32 * piSteamId, uint32 * piSignature, uint32 * pcbSignature)
+
+uint32_t __thiscall winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData(struct w_steam_iface *_this, uint32_t nAppID, void *pvBuffer, uint32_t cbBufferLength, uint32_t *piAppId, uint32_t *piSteamId, uint32_t *piSignature, uint32_t *pcbSignature)
 {
+    struct ISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData_params params =
+    {
+        .linux_side = _this->u_iface,
+        .nAppID = nAppID,
+        .pvBuffer = pvBuffer,
+        .cbBufferLength = cbBufferLength,
+        .piAppId = piAppId,
+        .piSteamId = piSteamId,
+        .piSignature = piSignature,
+        .pcbSignature = pcbSignature,
+    };
     TRACE("%p\n", _this);
-    return cppISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData(_this->linux_side, nAppID, pvBuffer, cbBufferLength, piAppId, piSteamId, piSignature, pcbSignature);
+    STEAMCLIENT_CALL( ISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData, &params );
+    return params._ret;
 }
 
 extern vtable_ptr winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_vtable;
 
-#ifndef __GNUC__
-void __asm_dummy_vtables(void) {
-#endif
+DEFINE_RTTI_DATA0(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001, 0, ".?AVISteamAppTicket@@")
+
+__ASM_BLOCK_BEGIN(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_vtables)
     __ASM_VTABLE(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001,
         VTABLE_ADD_FUNC(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_GetAppOwnershipTicketData)
     );
-#ifndef __GNUC__
-}
-#endif
+__ASM_BLOCK_END
 
-winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001 *create_winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001(void *linux_side)
+struct w_steam_iface *create_winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001(void *u_iface)
 {
-    winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001 *r = alloc_mem_for_iface(sizeof(winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001), "STEAMAPPTICKET_INTERFACE_VERSION001");
+    struct w_steam_iface *r = alloc_mem_for_iface(sizeof(struct w_steam_iface), "STEAMAPPTICKET_INTERFACE_VERSION001");
     TRACE("-> %p\n", r);
     r->vtable = alloc_vtable(&winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_vtable, 1, "STEAMAPPTICKET_INTERFACE_VERSION001");
-    r->linux_side = linux_side;
+    r->u_iface = u_iface;
     return r;
 }
 
+void init_winISteamAppTicket_rtti( char *base )
+{
+#ifdef __x86_64__
+    init_winISteamAppTicket_STEAMAPPTICKET_INTERFACE_VERSION001_rtti( base );
+#endif /* __x86_64__ */
+}

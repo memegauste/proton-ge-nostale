@@ -1,121 +1,172 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_112/steam_api.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_112
-#include "struct_converters.h"
-#include "cppISteamUser_SteamUser014.h"
-HSteamUser cppISteamUser_SteamUser014_GetHSteamUser(void *linux_side)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamUser_SteamUser014_GetHSteamUser( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetHSteamUser();
+    struct ISteamUser_SteamUser014_GetHSteamUser_params *params = (struct ISteamUser_SteamUser014_GetHSteamUser_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->GetHSteamUser(  );
+    return 0;
 }
 
-bool cppISteamUser_SteamUser014_BLoggedOn(void *linux_side)
+NTSTATUS ISteamUser_SteamUser014_BLoggedOn( void *args )
 {
-    return ((ISteamUser*)linux_side)->BLoggedOn();
+    struct ISteamUser_SteamUser014_BLoggedOn_params *params = (struct ISteamUser_SteamUser014_BLoggedOn_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->BLoggedOn(  );
+    return 0;
 }
 
-CSteamID cppISteamUser_SteamUser014_GetSteamID(void *linux_side)
+NTSTATUS ISteamUser_SteamUser014_GetSteamID( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetSteamID();
+    struct ISteamUser_SteamUser014_GetSteamID_params *params = (struct ISteamUser_SteamUser014_GetSteamID_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    *params->_ret = iface->GetSteamID(  );
+    return 0;
 }
 
-int cppISteamUser_SteamUser014_InitiateGameConnection(void *linux_side, void * pAuthBlob, int cbMaxAuthBlob, CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPortServer, bool bSecure)
+NTSTATUS ISteamUser_SteamUser014_InitiateGameConnection( void *args )
 {
-    return ((ISteamUser*)linux_side)->InitiateGameConnection((void *)pAuthBlob, (int)cbMaxAuthBlob, (CSteamID)steamIDGameServer, (uint32)unIPServer, (uint16)usPortServer, (bool)bSecure);
+    struct ISteamUser_SteamUser014_InitiateGameConnection_params *params = (struct ISteamUser_SteamUser014_InitiateGameConnection_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->InitiateGameConnection( params->pAuthBlob, params->cbMaxAuthBlob, params->steamIDGameServer, params->unIPServer, params->usPortServer, params->bSecure );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_TerminateGameConnection(void *linux_side, uint32 unIPServer, uint16 usPortServer)
+NTSTATUS ISteamUser_SteamUser014_TerminateGameConnection( void *args )
 {
-    ((ISteamUser*)linux_side)->TerminateGameConnection((uint32)unIPServer, (uint16)usPortServer);
+    struct ISteamUser_SteamUser014_TerminateGameConnection_params *params = (struct ISteamUser_SteamUser014_TerminateGameConnection_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->TerminateGameConnection( params->unIPServer, params->usPortServer );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_TrackAppUsageEvent(void *linux_side, CGameID gameID, int eAppUsageEvent, const char * pchExtraInfo)
+NTSTATUS ISteamUser_SteamUser014_TrackAppUsageEvent( void *args )
 {
-    ((ISteamUser*)linux_side)->TrackAppUsageEvent((CGameID)gameID, (int)eAppUsageEvent, (const char *)pchExtraInfo);
+    struct ISteamUser_SteamUser014_TrackAppUsageEvent_params *params = (struct ISteamUser_SteamUser014_TrackAppUsageEvent_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->TrackAppUsageEvent( params->gameID, params->eAppUsageEvent, params->pchExtraInfo );
+    return 0;
 }
 
-bool cppISteamUser_SteamUser014_GetUserDataFolder(void *linux_side, char * pchBuffer, int cubBuffer)
+NTSTATUS ISteamUser_SteamUser014_GetUserDataFolder( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetUserDataFolder((char *)pchBuffer, (int)cubBuffer);
+    struct ISteamUser_SteamUser014_GetUserDataFolder_params *params = (struct ISteamUser_SteamUser014_GetUserDataFolder_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->GetUserDataFolder( params->pchBuffer, params->cubBuffer );
+    steamclient_unix_path_to_dos_path( params->_ret, params->pchBuffer, params->pchBuffer, params->cubBuffer, 0 );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_StartVoiceRecording(void *linux_side)
+NTSTATUS ISteamUser_SteamUser014_StartVoiceRecording( void *args )
 {
-    ((ISteamUser*)linux_side)->StartVoiceRecording();
+    struct ISteamUser_SteamUser014_StartVoiceRecording_params *params = (struct ISteamUser_SteamUser014_StartVoiceRecording_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->StartVoiceRecording(  );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_StopVoiceRecording(void *linux_side)
+NTSTATUS ISteamUser_SteamUser014_StopVoiceRecording( void *args )
 {
-    ((ISteamUser*)linux_side)->StopVoiceRecording();
+    struct ISteamUser_SteamUser014_StopVoiceRecording_params *params = (struct ISteamUser_SteamUser014_StopVoiceRecording_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->StopVoiceRecording(  );
+    return 0;
 }
 
-EVoiceResult cppISteamUser_SteamUser014_GetAvailableVoice(void *linux_side, uint32 * pcbCompressed, uint32 * pcbUncompressed)
+NTSTATUS ISteamUser_SteamUser014_GetAvailableVoice( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetAvailableVoice((uint32 *)pcbCompressed, (uint32 *)pcbUncompressed);
+    struct ISteamUser_SteamUser014_GetAvailableVoice_params *params = (struct ISteamUser_SteamUser014_GetAvailableVoice_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->GetAvailableVoice( params->pcbCompressed, params->pcbUncompressed );
+    return 0;
 }
 
-EVoiceResult cppISteamUser_SteamUser014_GetVoice(void *linux_side, bool bWantCompressed, void * pDestBuffer, uint32 cbDestBufferSize, uint32 * nBytesWritten, bool bWantUncompressed, void * pUncompressedDestBuffer, uint32 cbUncompressedDestBufferSize, uint32 * nUncompressBytesWritten)
+NTSTATUS ISteamUser_SteamUser014_GetVoice( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetVoice((bool)bWantCompressed, (void *)pDestBuffer, (uint32)cbDestBufferSize, (uint32 *)nBytesWritten, (bool)bWantUncompressed, (void *)pUncompressedDestBuffer, (uint32)cbUncompressedDestBufferSize, (uint32 *)nUncompressBytesWritten);
+    struct ISteamUser_SteamUser014_GetVoice_params *params = (struct ISteamUser_SteamUser014_GetVoice_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->GetVoice( params->bWantCompressed, params->pDestBuffer, params->cbDestBufferSize, params->nBytesWritten, params->bWantUncompressed, params->pUncompressedDestBuffer, params->cbUncompressedDestBufferSize, params->nUncompressBytesWritten );
+    return 0;
 }
 
-EVoiceResult cppISteamUser_SteamUser014_DecompressVoice(void *linux_side, const void * pCompressed, uint32 cbCompressed, void * pDestBuffer, uint32 cbDestBufferSize, uint32 * nBytesWritten)
+NTSTATUS ISteamUser_SteamUser014_DecompressVoice( void *args )
 {
-    return ((ISteamUser*)linux_side)->DecompressVoice((const void *)pCompressed, (uint32)cbCompressed, (void *)pDestBuffer, (uint32)cbDestBufferSize, (uint32 *)nBytesWritten);
+    struct ISteamUser_SteamUser014_DecompressVoice_params *params = (struct ISteamUser_SteamUser014_DecompressVoice_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->DecompressVoice( params->pCompressed, params->cbCompressed, params->pDestBuffer, params->cbDestBufferSize, params->nBytesWritten );
+    return 0;
 }
 
-HAuthTicket cppISteamUser_SteamUser014_GetAuthSessionTicket(void *linux_side, void * pTicket, int cbMaxTicket, uint32 * pcbTicket)
+NTSTATUS ISteamUser_SteamUser014_GetAuthSessionTicket( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetAuthSessionTicket((void *)pTicket, (int)cbMaxTicket, (uint32 *)pcbTicket);
+    struct ISteamUser_SteamUser014_GetAuthSessionTicket_params *params = (struct ISteamUser_SteamUser014_GetAuthSessionTicket_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->GetAuthSessionTicket( params->pTicket, params->cbMaxTicket, params->pcbTicket );
+    return 0;
 }
 
-EBeginAuthSessionResult cppISteamUser_SteamUser014_BeginAuthSession(void *linux_side, const void * pAuthTicket, int cbAuthTicket, CSteamID steamID)
+NTSTATUS ISteamUser_SteamUser014_BeginAuthSession( void *args )
 {
-    return ((ISteamUser*)linux_side)->BeginAuthSession((const void *)pAuthTicket, (int)cbAuthTicket, (CSteamID)steamID);
+    struct ISteamUser_SteamUser014_BeginAuthSession_params *params = (struct ISteamUser_SteamUser014_BeginAuthSession_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->BeginAuthSession( params->pAuthTicket, params->cbAuthTicket, params->steamID );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_EndAuthSession(void *linux_side, CSteamID steamID)
+NTSTATUS ISteamUser_SteamUser014_EndAuthSession( void *args )
 {
-    ((ISteamUser*)linux_side)->EndAuthSession((CSteamID)steamID);
+    struct ISteamUser_SteamUser014_EndAuthSession_params *params = (struct ISteamUser_SteamUser014_EndAuthSession_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->EndAuthSession( params->steamID );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_CancelAuthTicket(void *linux_side, HAuthTicket hAuthTicket)
+NTSTATUS ISteamUser_SteamUser014_CancelAuthTicket( void *args )
 {
-    ((ISteamUser*)linux_side)->CancelAuthTicket((HAuthTicket)hAuthTicket);
+    struct ISteamUser_SteamUser014_CancelAuthTicket_params *params = (struct ISteamUser_SteamUser014_CancelAuthTicket_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->CancelAuthTicket( params->hAuthTicket );
+    return 0;
 }
 
-EUserHasLicenseForAppResult cppISteamUser_SteamUser014_UserHasLicenseForApp(void *linux_side, CSteamID steamID, AppId_t appID)
+NTSTATUS ISteamUser_SteamUser014_UserHasLicenseForApp( void *args )
 {
-    return ((ISteamUser*)linux_side)->UserHasLicenseForApp((CSteamID)steamID, (AppId_t)appID);
+    struct ISteamUser_SteamUser014_UserHasLicenseForApp_params *params = (struct ISteamUser_SteamUser014_UserHasLicenseForApp_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->UserHasLicenseForApp( params->steamID, params->appID );
+    return 0;
 }
 
-bool cppISteamUser_SteamUser014_BIsBehindNAT(void *linux_side)
+NTSTATUS ISteamUser_SteamUser014_BIsBehindNAT( void *args )
 {
-    return ((ISteamUser*)linux_side)->BIsBehindNAT();
+    struct ISteamUser_SteamUser014_BIsBehindNAT_params *params = (struct ISteamUser_SteamUser014_BIsBehindNAT_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->BIsBehindNAT(  );
+    return 0;
 }
 
-void cppISteamUser_SteamUser014_AdvertiseGame(void *linux_side, CSteamID steamIDGameServer, uint32 unIPServer, uint16 usPortServer)
+NTSTATUS ISteamUser_SteamUser014_AdvertiseGame( void *args )
 {
-    ((ISteamUser*)linux_side)->AdvertiseGame((CSteamID)steamIDGameServer, (uint32)unIPServer, (uint16)usPortServer);
+    struct ISteamUser_SteamUser014_AdvertiseGame_params *params = (struct ISteamUser_SteamUser014_AdvertiseGame_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    iface->AdvertiseGame( params->steamIDGameServer, params->unIPServer, params->usPortServer );
+    return 0;
 }
 
-SteamAPICall_t cppISteamUser_SteamUser014_RequestEncryptedAppTicket(void *linux_side, void * pDataToInclude, int cbDataToInclude)
+NTSTATUS ISteamUser_SteamUser014_RequestEncryptedAppTicket( void *args )
 {
-    return ((ISteamUser*)linux_side)->RequestEncryptedAppTicket((void *)pDataToInclude, (int)cbDataToInclude);
+    struct ISteamUser_SteamUser014_RequestEncryptedAppTicket_params *params = (struct ISteamUser_SteamUser014_RequestEncryptedAppTicket_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->RequestEncryptedAppTicket( params->pDataToInclude, params->cbDataToInclude );
+    return 0;
 }
 
-bool cppISteamUser_SteamUser014_GetEncryptedAppTicket(void *linux_side, void * pTicket, int cbMaxTicket, uint32 * pcbTicket)
+NTSTATUS ISteamUser_SteamUser014_GetEncryptedAppTicket( void *args )
 {
-    return ((ISteamUser*)linux_side)->GetEncryptedAppTicket((void *)pTicket, (int)cbMaxTicket, (uint32 *)pcbTicket);
+    struct ISteamUser_SteamUser014_GetEncryptedAppTicket_params *params = (struct ISteamUser_SteamUser014_GetEncryptedAppTicket_params *)args;
+    struct u_ISteamUser_SteamUser014 *iface = (struct u_ISteamUser_SteamUser014 *)params->linux_side;
+    params->_ret = iface->GetEncryptedAppTicket( params->pTicket, params->cbMaxTicket, params->pcbTicket );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

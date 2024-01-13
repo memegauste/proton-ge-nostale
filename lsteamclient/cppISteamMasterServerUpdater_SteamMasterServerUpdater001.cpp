@@ -1,87 +1,115 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_116/steam_api.h"
-#include "steamworks_sdk_116/isteammasterserverupdater.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_116
-#include "struct_converters.h"
-#include "cppISteamMasterServerUpdater_SteamMasterServerUpdater001.h"
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_SetActive(void *linux_side, bool bActive)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetActive( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->SetActive((bool)bActive);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetActive_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetActive_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->SetActive( params->bActive );
+    return 0;
 }
 
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_SetHeartbeatInterval(void *linux_side, int iHeartbeatInterval)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetHeartbeatInterval( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->SetHeartbeatInterval((int)iHeartbeatInterval);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetHeartbeatInterval_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetHeartbeatInterval_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->SetHeartbeatInterval( params->iHeartbeatInterval );
+    return 0;
 }
 
-bool cppISteamMasterServerUpdater_SteamMasterServerUpdater001_HandleIncomingPacket(void *linux_side, const void * pData, int cbData, uint32 srcIP, uint16 srcPort)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_HandleIncomingPacket( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->HandleIncomingPacket((const void *)pData, (int)cbData, (uint32)srcIP, (uint16)srcPort);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_HandleIncomingPacket_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_HandleIncomingPacket_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->HandleIncomingPacket( params->pData, params->cbData, params->srcIP, params->srcPort );
+    return 0;
 }
 
-int cppISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNextOutgoingPacket(void *linux_side, void * pOut, int cbMaxOut, uint32 * pNetAdr, uint16 * pPort)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNextOutgoingPacket( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->GetNextOutgoingPacket((void *)pOut, (int)cbMaxOut, (uint32 *)pNetAdr, (uint16 *)pPort);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNextOutgoingPacket_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNextOutgoingPacket_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->GetNextOutgoingPacket( params->pOut, params->cbMaxOut, params->pNetAdr, params->pPort );
+    return 0;
 }
 
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_SetBasicServerData(void *linux_side, unsigned short nProtocolVersion, bool bDedicatedServer, const char * pRegionName, const char * pProductName, unsigned short nMaxReportedClients, bool bPasswordProtected, const char * pGameDescription)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetBasicServerData( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->SetBasicServerData((unsigned short)nProtocolVersion, (bool)bDedicatedServer, (const char *)pRegionName, (const char *)pProductName, (unsigned short)nMaxReportedClients, (bool)bPasswordProtected, (const char *)pGameDescription);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetBasicServerData_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetBasicServerData_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->SetBasicServerData( params->nProtocolVersion, params->bDedicatedServer, params->pRegionName, params->pProductName, params->nMaxReportedClients, params->bPasswordProtected, params->pGameDescription );
+    return 0;
 }
 
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_ClearAllKeyValues(void *linux_side)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_ClearAllKeyValues( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->ClearAllKeyValues();
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_ClearAllKeyValues_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_ClearAllKeyValues_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->ClearAllKeyValues(  );
+    return 0;
 }
 
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_SetKeyValue(void *linux_side, const char * pKey, const char * pValue)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetKeyValue( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->SetKeyValue((const char *)pKey, (const char *)pValue);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetKeyValue_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_SetKeyValue_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->SetKeyValue( params->pKey, params->pValue );
+    return 0;
 }
 
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_NotifyShutdown(void *linux_side)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_NotifyShutdown( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->NotifyShutdown();
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_NotifyShutdown_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_NotifyShutdown_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->NotifyShutdown(  );
+    return 0;
 }
 
-bool cppISteamMasterServerUpdater_SteamMasterServerUpdater001_WasRestartRequested(void *linux_side)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_WasRestartRequested( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->WasRestartRequested();
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_WasRestartRequested_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_WasRestartRequested_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->WasRestartRequested(  );
+    return 0;
 }
 
-void cppISteamMasterServerUpdater_SteamMasterServerUpdater001_ForceHeartbeat(void *linux_side)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_ForceHeartbeat( void *args )
 {
-    ((ISteamMasterServerUpdater*)linux_side)->ForceHeartbeat();
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_ForceHeartbeat_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_ForceHeartbeat_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    iface->ForceHeartbeat(  );
+    return 0;
 }
 
-bool cppISteamMasterServerUpdater_SteamMasterServerUpdater001_AddMasterServer(void *linux_side, const char * pServerAddress)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_AddMasterServer( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->AddMasterServer((const char *)pServerAddress);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_AddMasterServer_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_AddMasterServer_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->AddMasterServer( params->pServerAddress );
+    return 0;
 }
 
-bool cppISteamMasterServerUpdater_SteamMasterServerUpdater001_RemoveMasterServer(void *linux_side, const char * pServerAddress)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_RemoveMasterServer( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->RemoveMasterServer((const char *)pServerAddress);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_RemoveMasterServer_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_RemoveMasterServer_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->RemoveMasterServer( params->pServerAddress );
+    return 0;
 }
 
-int cppISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNumMasterServers(void *linux_side)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNumMasterServers( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->GetNumMasterServers();
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNumMasterServers_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetNumMasterServers_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->GetNumMasterServers(  );
+    return 0;
 }
 
-int cppISteamMasterServerUpdater_SteamMasterServerUpdater001_GetMasterServerAddress(void *linux_side, int iServer, char * pOut, int outBufferSize)
+NTSTATUS ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetMasterServerAddress( void *args )
 {
-    return ((ISteamMasterServerUpdater*)linux_side)->GetMasterServerAddress((int)iServer, (char *)pOut, (int)outBufferSize);
+    struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetMasterServerAddress_params *params = (struct ISteamMasterServerUpdater_SteamMasterServerUpdater001_GetMasterServerAddress_params *)args;
+    struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *iface = (struct u_ISteamMasterServerUpdater_SteamMasterServerUpdater001 *)params->linux_side;
+    params->_ret = iface->GetMasterServerAddress( params->iServer, params->pOut, params->outBufferSize );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif

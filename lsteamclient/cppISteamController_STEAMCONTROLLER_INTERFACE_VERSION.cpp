@@ -1,46 +1,53 @@
-#include "steam_defs.h"
-#pragma push_macro("__cdecl")
-#undef __cdecl
-#define __cdecl
-#include "steamworks_sdk_134/steam_api.h"
-#pragma pop_macro("__cdecl")
-#include "steamclient_private.h"
-#ifdef __cplusplus
-extern "C" {
-#endif
-#define SDKVER_134
-#include "struct_converters.h"
-#include "cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION.h"
-bool cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Init(void *linux_side, const char * pchAbsolutePathToControllerConfigVDF)
+/* This file is auto-generated, do not edit. */
+#include "unix_private.h"
+
+NTSTATUS ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Init( void *args )
 {
-    return ((ISteamController*)linux_side)->Init((const char *)pchAbsolutePathToControllerConfigVDF);
+    struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Init_params *params = (struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Init_params *)args;
+    struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *iface = (struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *)params->linux_side;
+    char *u_pchAbsolutePathToControllerConfigVDF = steamclient_dos_to_unix_path( params->pchAbsolutePathToControllerConfigVDF, 0 );
+    params->_ret = iface->Init( u_pchAbsolutePathToControllerConfigVDF );
+    steamclient_free_path( u_pchAbsolutePathToControllerConfigVDF );
+    return 0;
 }
 
-bool cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Shutdown(void *linux_side)
+NTSTATUS ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Shutdown( void *args )
 {
-    return ((ISteamController*)linux_side)->Shutdown();
+    struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Shutdown_params *params = (struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_Shutdown_params *)args;
+    struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *iface = (struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *)params->linux_side;
+    params->_ret = iface->Shutdown(  );
+    return 0;
 }
 
-void cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION_RunFrame(void *linux_side)
+NTSTATUS ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_RunFrame( void *args )
 {
-    ((ISteamController*)linux_side)->RunFrame();
+    struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_RunFrame_params *params = (struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_RunFrame_params *)args;
+    struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *iface = (struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *)params->linux_side;
+    iface->RunFrame(  );
+    return 0;
 }
 
-bool cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION_GetControllerState(void *linux_side, uint32 unControllerIndex, SteamControllerState001_t * pState)
+NTSTATUS ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_GetControllerState( void *args )
 {
-    return ((ISteamController*)linux_side)->GetControllerState((uint32)unControllerIndex, (SteamControllerState001_t *)pState);
+    struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_GetControllerState_params *params = (struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_GetControllerState_params *)args;
+    struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *iface = (struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *)params->linux_side;
+    params->_ret = iface->GetControllerState( params->unControllerIndex, params->pState );
+    return 0;
 }
 
-void cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION_TriggerHapticPulse(void *linux_side, uint32 unControllerIndex, ESteamControllerPad eTargetPad, unsigned short usDurationMicroSec)
+NTSTATUS ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_TriggerHapticPulse( void *args )
 {
-    ((ISteamController*)linux_side)->TriggerHapticPulse((uint32)unControllerIndex, (ESteamControllerPad)eTargetPad, (unsigned short)usDurationMicroSec);
+    struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_TriggerHapticPulse_params *params = (struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_TriggerHapticPulse_params *)args;
+    struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *iface = (struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *)params->linux_side;
+    iface->TriggerHapticPulse( params->unControllerIndex, params->eTargetPad, params->usDurationMicroSec );
+    return 0;
 }
 
-void cppISteamController_STEAMCONTROLLER_INTERFACE_VERSION_SetOverrideMode(void *linux_side, const char * pchMode)
+NTSTATUS ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_SetOverrideMode( void *args )
 {
-    ((ISteamController*)linux_side)->SetOverrideMode((const char *)pchMode);
+    struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_SetOverrideMode_params *params = (struct ISteamController_STEAMCONTROLLER_INTERFACE_VERSION_SetOverrideMode_params *)args;
+    struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *iface = (struct u_ISteamController_STEAMCONTROLLER_INTERFACE_VERSION *)params->linux_side;
+    iface->SetOverrideMode( params->pchMode );
+    return 0;
 }
 
-#ifdef __cplusplus
-}
-#endif
