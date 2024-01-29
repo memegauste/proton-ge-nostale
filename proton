@@ -1773,6 +1773,8 @@ class Session:
         # Either launch the game from Steam, or put the file steam_appid.txt containing the correct appID in your game folder.
         elif os.environ.get("SteamGameId", 0) == "0":
             argv = [g_proton.wine64_bin, "start", "/unix"]
+        elif os.environ.get("STORE", 0) != "":
+            argv = [g_proton.wine64_bin, "start", "/unix"]
         else:
             argv = [g_proton.wine64_bin, "c:\\windows\\system32\\steam.exe"]
 
