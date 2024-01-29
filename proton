@@ -792,7 +792,7 @@ class CompatData:
             self.migrate_user_paths()
 
             if not file_exists(self.prefix_dir + "/dosdevices/c:", follow_symlinks=False):
-                os.symlink("../drive_c", self.prefix_dir + "/dosdevices/c:")
+                os.symlink(self.prefix_dir + "/drive_c", self.prefix_dir + "/dosdevices/c:")
 
             if not file_exists(self.prefix_dir + "/dosdevices/z:", follow_symlinks=False):
                 os.symlink("/", self.prefix_dir + "/dosdevices/z:")
