@@ -791,6 +791,11 @@ class CompatData:
 
             self.migrate_user_paths()
 
+            if os.getenv('GAMEID') != "":
+                if not file_exists(self.prefix_dir + "/dosdevices", follow_symlinks=False):
+                    makedirs(self.prefix_dir + "/dosdevices")
+                    os.symlink(self.prefix_dir + "/drive_c", self.prefix_dir + "/dosdevices/c:")
+
             if not file_exists(self.prefix_dir + "/dosdevices/c:", follow_symlinks=False):
                 os.symlink(self.prefix_dir + "/drive_c", self.prefix_dir + "/dosdevices/c:")
 
