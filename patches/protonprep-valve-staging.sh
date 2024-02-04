@@ -348,10 +348,6 @@
     echo "WINE: -GAME FIXES- Fix Farlight 84 crash"
     patch -Np1 < ../patches/wine-hotfixes/pending/4428.patch
 
-    # https://github.com/ValveSoftware/Proton/issues/4625
-    echo "WINE: -GAME FIXES- Fix Yakuza 5 cutscenes audio"
-    patch -Np1 < ../patches/game-patches/yakuza5-cutscenes.patch
-
 ### END GAME PATCH SECTION ###
 
 ### (2-4) WINE HOTFIX/BACKPORT SECTION ###
@@ -375,6 +371,11 @@
     # https://bugs.winehq.org/show_bug.cgi?id=51683
     echo "WINE: -PENDING- Guild Wars 2 patch"
     patch -Np1 < ../patches/wine-hotfixes/pending/hotfix-guild_wars_2.patch
+
+    # https://github.com/ValveSoftware/wine/pull/205
+    # https://github.com/ValveSoftware/Proton/issues/4625
+    echo "WINE: -PENDING- Add WINE_DISABLE_SFN option. (Yakuza 5 cutscenes fix)"
+    patch -Np1 < ../patches/wine-hotfixes/pending/ntdll_add_wine_disable_sfn.patch
 
 ### END WINE PENDING UPSTREAM SECTION ###
 
