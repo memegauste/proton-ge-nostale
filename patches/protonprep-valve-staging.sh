@@ -17,6 +17,13 @@
     pushd vkd3d-proton
     git reset --hard HEAD
     git clean -xdf
+    
+    echo "VKD3D-PROTON: temporary fixup for video playback broken in godfall"
+    git revert --no-commit 32ff676b9994de05b973e2b12063afbbfcb6cd38
+    git revert --no-commit b282fd3af4b66e527d8d186413248d23417fc2d0
+    git revert --no-commit 94260bf8875d07a1b7c66de13debf3f273319ce3
+    git revert --no-commit 44de529b27734372ec15a39decd0a300c40383f2
+
     #echo "VKD3D-PROTON: -Nvidia Reflex- Add NV low latency support"
     #pushd khronos/Vulkan-Headers; git pull; git checkout bbe0f575ebd6098369f0ac6c6a43532732ed0ba6; popd
     #patch -Np1 < ../patches/proton/81-nv_low_latency_vkd3d_proton.patch
@@ -27,6 +34,15 @@
     git clean -xdf
     #echo "DXVK-NVAPI: -Nvidia Reflex- Add support for Reflex"
     #patch -Np1 < ../patches/proton/82-nv_low_latency_dxvk_nvapi.patch
+    popd
+
+    pushd gstreamer
+    git reset --hard HEAD
+    git clean -xdf
+    
+    echo "GSTREAMER: fix for unclosable invisible wayland opengl windows in taskbar"
+    patch -Np1 < ../patches/gstreamer/5509.patch
+    patch -Np1 < ../patches/gstreamer/5511.patch
     popd
 
 ### END PREP SECTION ###
