@@ -48,28 +48,6 @@ Part-of: <https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/55
  subprojects/gstreamer/docs/index.md           |  2 +-
  10 files changed, 107 insertions(+), 14 deletions(-)
 
-diff --git a/girs/GstGL-1.0.gir b/girs/GstGL-1.0.gir
-index 2626db44792..87d7645c001 100644
---- a/girs/GstGL-1.0.gir
-+++ b/girs/GstGL-1.0.gir
-@@ -3016,7 +3016,7 @@ a #GstGLDisplay.
- There are a number of environment variables that influence the choice of
- platform and window system specific functionality.
- - GST_GL_WINDOW influences the window system to use.  Common values are
--  'x11', 'wayland', 'win32' or 'cocoa'.
-+  'x11', 'wayland', 'surfaceless', 'win32' or 'cocoa'.
- - GST_GL_PLATFORM influences the OpenGL platform to use.  Common values are
-   'egl', 'glx', 'wgl' or 'cgl'.
- - GST_GL_API influences the OpenGL API requested by the OpenGL platform.
-@@ -3453,6 +3453,8 @@ display's object lock held.</doc>
-       </member>
-       <member name="android" value="2048" c:identifier="GST_GL_DISPLAY_TYPE_ANDROID" glib:nick="android">
-       </member>
-+      <member name="egl_surfaceless" value="4096" c:identifier="GST_GL_DISPLAY_TYPE_EGL_SURFACELESS" glib:nick="egl-surfaceless">
-+      </member>
-       <member name="any" value="4294967295" c:identifier="GST_GL_DISPLAY_TYPE_ANY" glib:nick="any">
-         <doc xml:space="preserve" filename="../subprojects/gst-plugins-base/gst-libs/gst/gl/gstgldisplay.h">any display type</doc>
-       </member>
 diff --git a/subprojects/gst-plugins-base/gst-libs/gst/gl/egl/gstgldisplay_egl.c b/subprojects/gst-plugins-base/gst-libs/gst/gl/egl/gstgldisplay_egl.c
 index e617b8adb88..902416c19f6 100644
 --- a/subprojects/gst-plugins-base/gst-libs/gst/gl/egl/gstgldisplay_egl.c
