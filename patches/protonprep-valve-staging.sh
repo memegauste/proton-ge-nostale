@@ -17,6 +17,7 @@
     pushd vkd3d-proton
     git reset --hard HEAD
     git clean -xdf
+    
     #echo "VKD3D-PROTON: -Nvidia Reflex- Add NV low latency support"
     #pushd khronos/Vulkan-Headers; git pull; git checkout bbe0f575ebd6098369f0ac6c6a43532732ed0ba6; popd
     #patch -Np1 < ../patches/proton/81-nv_low_latency_vkd3d_proton.patch
@@ -29,10 +30,13 @@
     #patch -Np1 < ../patches/proton/82-nv_low_latency_dxvk_nvapi.patch
     popd
 
-    pushd wineopenxr
-    git checkout openxr.c
-    echo "WINEOPENXR: -GAME FIXES- BeamNG.Drive VR Fix"
-    patch -Np1 < ../patches/game-patches/beamng-vr-fix.patch
+    pushd gstreamer
+    git reset --hard HEAD
+    git clean -xdf
+    
+    echo "GSTREAMER: fix for unclosable invisible wayland opengl windows in taskbar"
+    patch -Np1 < ../patches/gstreamer/5509.patch
+    patch -Np1 < ../patches/gstreamer/5511.patch
     popd
 
 ### END PREP SECTION ###
@@ -336,10 +340,7 @@
     echo "WINE: -GAME FIXES- assetto corsa hud fix"
     patch -Np1 < ../patches/game-patches/assettocorsa-hud.patch
 
-    echo "WINE: -GAME FIXES- killer instinct vulkan fix"
-    patch -Np1 < ../patches/game-patches/killer-instinct-winevulkan_fix.patch
-
-    echo "WINE: -GAME FIXES- add file search workaround hack for Phantasy Star Online 2"
+    echo "WINE: -GAME FIXES- add file search workaround hack for Phantasy Star Online 2 (WINE_NO_OPEN_FILE_SEARCH)"
     patch -Np1 < ../patches/game-patches/pso2_hack.patch
 
     echo "WINE: -GAME FIXES- Add Star Citizen EAC patch and wrap it around SteamGameId=starcitizen envvar"
@@ -349,15 +350,6 @@
     echo "WINE: -GAME FIXES- Fix FFXIV not playing Hydaelyn intro video on new install"
     patch -Np1 < ../patches/game-patches/ffxiv_hydaelyn_intro_playback_fix.patch
 
-    # https://github.com/ValveSoftware/Proton/issues/6717
-    # https://gitlab.winehq.org/wine/wine/-/merge_requests/4428
-    echo "WINE: -GAME FIXES- Fix Farlight 84 crash"
-    patch -Np1 < ../patches/wine-hotfixes/pending/4428.patch
-
-    # https://github.com/ValveSoftware/Proton/issues/4625
-    echo "WINE: -GAME FIXES- Fix Yakuza 5 cutscenes audio"
-    patch -Np1 < ../patches/game-patches/yakuza5-cutscenes.patch
-
 ### END GAME PATCH SECTION ###
 
 ### (2-4) WINE HOTFIX/BACKPORT SECTION ###
@@ -365,14 +357,6 @@
     # https://gitlab.winehq.org/wine/wine/-/merge_requests/3777
     echo "WINE: -BACKPORT- R6 Siege backport"
     patch -Np1 < ../patches/wine-hotfixes/upstream/3777.patch
-
-    # https://gitlab.winehq.org/wine/wine/-/merge_requests/2403
-    echo "WINE: -BACKPORT- LibreVR Revive backport"
-    patch -Np1 < ../patches/wine-hotfixes/upstream/2403.patch
-
-    # https://bugs.winehq.org/show_bug.cgi?id=55660
-    echo "WINE: -BACKPORT- HID with more than 8 axis overwrites inputs after it"
-    patch -Np1 < ../patches/wine-hotfixes/upstream/55660.patch
 
 ### END WINE HOTFIX/BACKPORT SECTION ###
 
@@ -382,15 +366,16 @@
     echo "WINE: -PENDING- unity crash hotfix"
     patch -Np1 < ../patches/wine-hotfixes/pending/unity_crash_hotfix.patch
 
-    # https://bugs.winehq.org/show_bug.cgi?id=51683
-    echo "WINE: -PENDING- Guild Wars 2 patch"
-    patch -Np1 < ../patches/wine-hotfixes/pending/hotfix-guild_wars_2.patch
+    # https://github.com/ValveSoftware/wine/pull/205
+    # https://github.com/ValveSoftware/Proton/issues/4625
+    echo "WINE: -PENDING- Add WINE_DISABLE_SFN option. (Yakuza 5 cutscenes fix)"
+    patch -Np1 < ../patches/wine-hotfixes/pending/ntdll_add_wine_disable_sfn.patch
 
-    # This breaks gstreamer inside proton environment, only use it for WINE builds outside proton
-    # https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/2997
-    # https://github.com/ValveSoftware/wine/pull/210
-    #echo "WINE: -PENDING- Fix empty 'OpenGL Renderer' windows created by gstreamer"
-    #patch -Np1 < ../patches/wine-hotfixes/pending/0001-ntdll-Force-gstreamer-to-only-use-x11-for-GST_GL_WIN.patch
+    # https://github.com/ValveSoftware/Proton/issues/6717
+    # https://gitlab.winehq.org/wine/wine/-/merge_requests/4428
+    echo "WINE: -GAME FIXES- Fix Farlight 84 crash"
+    patch -Np1 < ../patches/wine-hotfixes/pending/4428.patch
+
 
 ### END WINE PENDING UPSTREAM SECTION ###
 
@@ -406,11 +391,6 @@
 
     #echo "WINE: -FSR- fullscreen hack fsr patch"
     #patch -Np1 < ../patches/proton/48-proton-fshack_amd_fsr.patch
-
-    #echo "WINE: -FSR- fullscreen hack resolution calculation fixup"
-    #patch -Np1 < ../patches/proton/49-fsr-width-using-height-and-aspect-ratio.patch
-    #echo "WINE: -FSR- fullscreen hack fix washed colors when FSR disabled"
-    #patch -Np1 < ../patches/proton/50-fsr-fix-washed-colors-when-disabled.patch
 
     #echo "WINE: -FSR- enable FSR flag by default (fixes broken fs hack scaling in some games like Apex and FFXIV)"
     #patch -Np1 < ../patches/proton/71-invert-fsr-logic.patch
